@@ -1,5 +1,5 @@
 import { app } from "../../../scripts/app.js";
-import { generateId, injectCss, injectJs, wait, loadScript } from "../../ComfyUI-Thumbnails/js/shared_utils.js";
+import { generateId, injectCss, injectJs, wait } from "../../ComfyUI-Thumbnails/js/shared_utils.js";
 
 // we don;t need that at all
 // loadScript('/ComfyUIThumbnails/js/imagesloaded.pkgd.min.js').catch((e) => {
@@ -12,12 +12,19 @@ var addImg = function(div){
   // http://127.0.0.1:8188/view?filename=__revAnimated_v122-house.png&type=input&subfolder=&t=1716949459831
   // http://127.0.0.1:8188/view?filename=__revAnimated_v122-house.png&type=input
   // https://css-tricks.com/piecing-together-approaches-for-a-css-masonry-layout/
-  // let filename = div.getAttribute('data-value').replace(/[\u00A0-\u9999<>\&]/g, i => '&#'+i.charCodeAt(0)+';')
   let filename = encodeURIComponent(div.getAttribute('data-value'));
-  let maxSize = app.ui.settings.getSettingValue("Thumbnails.ThumbnailSize");
+  let thumbnailSize = app.ui.settings.getSettingValue("Thumbnails.thumbnailSize");
+  thumbnailSize = (thumbnailSize == undefined) ? 100 : thumbnailSize;
+  let enableNames = app.ui.settings.getSettingValue("Thumbnails.enableNames");
+  enableNames = (enableNames == undefined) ? false : enableNames;
+  let fontSize = enableNames ? 'inherit' : '0';
+  console.log('enableNames',enableNames)
+  console.log('fontSize',fontSize)
   // console.log('filename',filename)
-  // div.innerHTML = '';
-  div.insertAdjacentHTML( 'beforeend', `<img decoding="async" loading="lazy" width="400" height="400" style="max-height:${maxSize}px;" class="masonry-content" src="view?filename=${filename}&type=input" alt="${filename}">` );
+
+  // 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.
+  div.style.fontSize = fontSize;
+  div.insertAdjacentHTML( 'afterBegin', `<img decoding="async" loading="lazy" width="400" height="400" style="max-height:${thumbnailSize}px" class="masonry-content" src="view?filename=${filename}&type=input" alt="${filename}">` );
   div.classList.add("masonry-item");
   // console.log('div',div)
   return div
@@ -26,7 +33,8 @@ var addImg = function(div){
 // we should override the core extensions/core/contextMenuFilter.js but I don't know how. Can't use the same name.
 const ext = {
   // name: "Comfy.ContextMenuFilter",
-  name: "Thumbnails.ContextMenuFilterThumbnails",
+  // name: "Thumbnails.ContextMenuFilterThumbnails",
+  name: "Comfy.ContextMenuFilterThumbnails",
   init() {
     const ctxMenu = LiteGraph.ContextMenu;
 
@@ -46,6 +54,8 @@ const ext = {
 
         const items = Array.from(this.root.querySelectorAll(".litemenu-entry"));
         let displayedItems = [...items];
+        let enableThumbnails = app.ui.settings.getSettingValue("Thumbnails.enableThumbnails");
+        enableThumbnails = (enableThumbnails == undefined) ? true : enableThumbnails;
         if (app.ui.settings.getSettingValue("Thumbnails.enableThumbnails") === true) {
           let displayedItems = [...items.map(addImg)];
         }

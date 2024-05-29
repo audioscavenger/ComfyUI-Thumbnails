@@ -11,10 +11,14 @@ Load Image thumbnails and show input subfolders!
 
 | Attribute | Default |
 | --- | --- |
+| `Show File Names` | False |
 | `Show Thumbnails` | True |
 | `Thumbnails Size` | 100 |
 
-Thumbnails are lazy loaded, and sized by their max-height. It looks better that way, almost like a masonery.
+Thumbnails are lazy loaded, and sized by their max-height. It looks better that way, almost like a masonery. Example without filenames:
+
+![ComfyUI-Thumbnails-options](/assets/ComfyUI-Thumbnails-search-without-filenames.webp)
+
 
 ## Installation
 ### Manual Download
@@ -28,6 +32,9 @@ git clone https://github.com/audioscavenger/ComfyUI-Thumbnails
 TODO:
 
 - [ ] browse subfolders of input
+
+### release 1.01
+- added option to hide filenames
 
 ### release 1.00
 - It just works... stole some code from KJNodes again
