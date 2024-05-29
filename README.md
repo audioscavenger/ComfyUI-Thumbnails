@@ -7,7 +7,7 @@ Load Image thumbnails and show input subfolders!
 
 ## Options
 
-[!ComfyUI-Thumbnails-options](/assets/ComfyUI-Thumbnails-options.webp)
+![ComfyUI-Thumbnails-options](/assets/ComfyUI-Thumbnails-options.webp)
 
 | Attribute | Default |
 | --- | --- |
