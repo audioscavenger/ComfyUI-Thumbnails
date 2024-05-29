@@ -1,0 +1,66 @@
+.litegraph.litecontextmenu {
+  /* left: initial !important; */
+  /* top: 100px !important; */
+}
+
+https://css-tricks.com/piecing-together-approaches-for-a-css-masonry-layout/
+  
+/* :root { */
+  /* counter-reset: masonry; */
+/* } */
+.masonry {
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
+  grid-auto-rows: 0;
+}
+
+.masonry-item {
+  border-radius: 5px;
+}
+
+.masonry-item {
+   background-color: #eee;
+   border-radius: 5px;
+   overflow: hidden;
+   text-align: center
+}
+
+
+.masonry-item,
+.masonry-item img {
+  position: relative;
+  
+  display: inline-grid;
+  /* max-height is handled by contextMenuFilterThumbnails.js since it's a manager option */
+  /* max-height: 100px; */
+  /* trick to get lazy load holder size reserved: add min and max-width 100% */
+  min-width: 50px;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  margin:auto;
+}
+
+
+/* .masonry-item:after { */
+  /* font-weight: bold; */
+  /* background-color: rgba(0, 0, 0, .5); */
+  /* content: counter(masonry); */
+  /* counter-increment: masonry; */
+  /* position: absolute; */
+  /* top: 0; */
+  /* left: 0;  */
+  /* height: 100%; */
+  /* width: 100%; */
+  /* color: white; */
+  /* display: flex; */
+  /* justify-content: center;  */
+  /* align-items: center; */
+  /* transition: all .1s ease-in; */
+/* } */
+
+.masonry-item:hover:after {
+  font-size: 30px;
+  background-color: rgba(0, 0, 0, .75);
+}
