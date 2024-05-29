@@ -1,4 +1,4 @@
-# 💾 Load Image thumbnails for ComfyUI
+# [📷] Load Image Thumbnails for ComfyUI
 Load Image thumbnails and show input subfolders!
 
 <p align="center">
@@ -7,11 +7,14 @@ Load Image thumbnails and show input subfolders!
 
 ## Options
 
-| Attribute | Description |
-| --- | --- |
-| `filename_prefix` |  String prefix added to files. |
-| `filename_keys` | Comm. |
+[!ComfyUI-Thumbnails-options](/assets/ComfyUI-Thumbnails-options.webp)
 
+| Attribute | Default |
+| --- | --- |
+| `Show Thumbnails` | True |
+| `Thumbnails Size` | 100 |
+
+Thumbnails are lazy loaded, and sized by their max-height. It looks better that way, almost like a masonery.
 
 ## Installation
 ### Manual Download

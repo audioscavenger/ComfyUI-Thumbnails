@@ -16,7 +16,7 @@ app.registerExtension({
   async setup(app) {
     app.ui.settings.addSetting({
       id: "Thumbnails.enableThumbnails",
-      name: "🎞️ Load Image: Show Thumbnails",
+      name: "[📷] Load Image: Show Thumbnails",
       defaultValue: true,
       type: "boolean",
       options: (value) => [
@@ -26,7 +26,7 @@ app.registerExtension({
     });
     app.ui.settings.addSetting({
       id: "Thumbnails.ThumbnailSize",
-      name: "🎞️ Load Image: Thumbnails Size",
+      name: "[📷] Load Image: Thumbnails Size",
       defaultValue: 100,
       type: "integer"
     });
