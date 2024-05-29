@@ -18,8 +18,8 @@ var addImg = function(div){
   let enableNames = app.ui.settings.getSettingValue("Thumbnails.enableNames");
   enableNames = (enableNames == undefined) ? false : enableNames;
   let fontSize = enableNames ? 'inherit' : '0';
-  console.log('enableNames',enableNames)
-  console.log('fontSize',fontSize)
+  // console.log('enableNames',enableNames)
+  // console.log('fontSize',fontSize)
   // console.log('filename',filename)
 
   // 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.
