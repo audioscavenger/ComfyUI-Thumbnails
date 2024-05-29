@@ -30,7 +30,7 @@ TODO:
 - [ ] browse subfolders of input
 
 ### release 1.00
-- It just works... stol some code from KJNodes again
+- It just works... stole some code from KJNodes again
 
 
 ## :ribbon: Licence
