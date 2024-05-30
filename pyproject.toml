@@ -1,0 +1,14 @@
+[project]
+name = "comfyui-thumbnails"
+description = "Load Image thumbnails and show input subfolders!"
+version = "1.1.0"
+license = "LICENSE"
+
+[project.urls]
+Repository = "https://github.com/audioscavenger/ComfyUI-Thumbnails"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = "audioscavenger"
+DisplayName = "ComfyUI-Thumbnails"
+Icon = ""

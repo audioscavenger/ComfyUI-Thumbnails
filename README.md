@@ -33,7 +33,10 @@ TODO:
 
 - [ ] browse subfolders of input
 
-### release 1.01
+### release 1.1.0
+- published in comfy-registry
+
+### release 1.0.1
 - added option to hide filenames
 
 ### release 1.00

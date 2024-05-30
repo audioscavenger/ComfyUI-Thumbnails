@@ -1,4 +1,4 @@
-version = 1.01
+version = 1.1.0
 
 class ComfyUIThumbnails:
   RETURN_TYPES = ()
