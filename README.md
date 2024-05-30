@@ -33,7 +33,7 @@ TODO:
 
 - [ ] browse subfolders of input
 
-### release 1.1.0
+### release 1.10
 - published in comfy-registry
 
 ### release 1.0.1
