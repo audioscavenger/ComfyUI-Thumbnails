@@ -1,3 +1,12 @@
+import { app } from "../../../scripts/app.js";
+import { api } from "../../../scripts/api.js";
+
+
+export function show_message(msg) {
+  app.ui.dialog.show(msg);
+  app.ui.dialog.element.style.zIndex = 10010;
+}
+
 // code based on mtb nodes by Mel Massadian https://github.com/melMass/comfy_mtb/ and KJNodes
 export function loadScript(
   FILE_URL,

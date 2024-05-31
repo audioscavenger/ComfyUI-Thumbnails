@@ -1,5 +1,5 @@
 # [📷] Load Image Thumbnails for ComfyUI
-Load Image thumbnails and show input subfolders!
+Load Image thumbnails, delete images, browse input subfolders.
 
 <p align="center">
  <img src="assets/ComfyUI-Thumbnails-featured-meme.webp" />
@@ -32,6 +32,12 @@ git clone https://github.com/audioscavenger/ComfyUI-Thumbnails
 TODO:
 
 - [ ] browse subfolders of input
+
+### release 1.20
+- added slide-in size
+- pre-load images
+- delete images
+- show image name on hover
 
 ### release 1.10
 - published in comfy-registry

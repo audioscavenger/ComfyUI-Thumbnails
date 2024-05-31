@@ -5,9 +5,6 @@
 
 https://css-tricks.com/piecing-together-approaches-for-a-css-masonry-layout/
   
-/* :root { */
-  /* counter-reset: masonry; */
-/* } */
 .masonry {
   display: grid;
   grid-gap: 10px;
@@ -26,11 +23,9 @@ https://css-tricks.com/piecing-together-approaches-for-a-css-masonry-layout/
    text-align: center
 }
 
-
 .masonry-item,
 .masonry-item img {
   position: relative;
-  
   display: inline-grid;
   /* max-height is handled by contextMenuFilterThumbnails.js since it's a manager option */
   /* max-height: 100px; */
@@ -43,24 +38,62 @@ https://css-tricks.com/piecing-together-approaches-for-a-css-masonry-layout/
 }
 
 
-/* .masonry-item:after { */
-  /* font-weight: bold; */
-  /* background-color: rgba(0, 0, 0, .5); */
-  /* content: counter(masonry); */
-  /* counter-increment: masonry; */
-  /* position: absolute; */
-  /* top: 0; */
-  /* left: 0;  */
-  /* height: 100%; */
-  /* width: 100%; */
-  /* color: white; */
-  /* display: flex; */
-  /* justify-content: center;  */
-  /* align-items: center; */
-  /* transition: all .1s ease-in; */
+/* TODO: explore alternative: https://www.geeksforgeeks.org/css-image-overlay-hover-title/ */
+/* to control the showText, we need to hide it from the initiator */
+.litegraph .litemenu-entry, .litemenu-title {
+  font-size: 0;
+}
+
+.hideText {
+  font-size: 0;
+}
+
+.showText {
+  font-size: small !important;
+}
+
+/* :root { */
+  /* counter-reset: masonry; */
 /* } */
+.masonry-item:after {
+  /* counter-increment: masonry; */
+  /* content: counter(masonry); */
+  /* https://developer.mozilla.org/en-US/docs/Web/CSS/attr */
+  /* content: attr(data-value); */
+  background-color: rgba(0, 0, 0, .2);
+  content: attr(data-size);
+  position: absolute;
+  top: 0;
+  font-size: small;
+  height: 0;
+  width: 100%;
+  color: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all .1s linear;
+}
 
 .masonry-item:hover:after {
-  font-size: 30px;
+  color: white;
+  height: 1em;
+  font-size: small;
   background-color: rgba(0, 0, 0, .75);
 }
+
+.btn-delete {
+  opacity: 0.1;
+  position: absolute;
+  right: 0.5em;
+  top: 0.5em;
+  cursor: pointer;
+  padding: var(--bs-btn-padding-y) var(--bs-btn-padding-x) !important;
+  color: #666;
+  z-index: 2;
+  touch-action: manipulation;
+}
+.masonry-item:hover .btn-delete,
+.btn-delete:hover {
+  opacity: 1;
+}
+
