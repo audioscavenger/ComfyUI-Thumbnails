@@ -34,9 +34,11 @@ async function deleteImage(filenameUri, thisRoot) {
     // var mode = manager_instance.datasrc_combo.value;
 
     // update_all_button.innerText = "Updating all...";
-    const response = await api.fetchApi(`/ComfyUIThumbnails/delete?value=${filenameUri}`);
-    // const response = await api.fetchApi(`/manager/delete?value=${filenameUri}`);
+    // const response = await api.fetchApi(`/ComfyUIThumbnails/delete?value=${filenameUri}`);
+    const response = await api.fetchApi(`/manager/delete?value=${filenameUri}`);
     const response_json = await response.json();
+    // console.log('response',response)
+    // console.log('response.json()', response_json)
 
     if (response.status == 403) {
       show_message(`Error deleting image ${filenameUri}: OS refused`);
