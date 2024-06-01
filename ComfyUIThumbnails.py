@@ -30,8 +30,8 @@ def findFile(name, path):
       return os.path.join(root, name)
 
 
-@PromptServer.instance.routes.get("/ComfyUIThumbnails/delete")
-# @PromptServer.instance.routes.get("/manager/delete")
+# @PromptServer.instance.routes.get("/ComfyUIThumbnails/delete")
+@PromptServer.instance.routes.get("/manager/delete")
 async def deleteImage(request):
   debug = False
   if debug: print(f"ComfyUIThumbnails request: {request}")
