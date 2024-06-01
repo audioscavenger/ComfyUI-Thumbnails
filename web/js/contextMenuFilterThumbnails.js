@@ -20,6 +20,8 @@ function pushItemToStorage(listName, item){
   localStorage.setItem(listName, JSON.stringify(list));
 }
 
+// apis are defined in ComfyUI\custom_nodes\ComfyUI-Manager\glob\manager_server.py
+// apis are defined in ComfyUI\custom_nodes\ComfyUI-Thumbnails\ComfyUIThumbnails.py
 // Adds filtering to combo context menus
 async function deleteImage(filenameUri, thisRoot) {
   // console.log('deleteImage filename',filenameUri)
@@ -31,11 +33,7 @@ async function deleteImage(filenameUri, thisRoot) {
   // update_all_button.style.backgroundColor = "gray";
 
   try {
-    // var mode = manager_instance.datasrc_combo.value;
-
-    // update_all_button.innerText = "Updating all...";
-    // const response = await api.fetchApi(`/ComfyUIThumbnails/delete?value=${filenameUri}`);
-    const response = await api.fetchApi(`/manager/delete?value=${filenameUri}`);
+    const response = await api.fetchApi(`/customnode/deleteImage?value=${filenameUri}`);
     const response_json = await response.json();
     // console.log('response',response)
     // console.log('response.json()', response_json)
@@ -411,18 +409,6 @@ app.registerExtension(ext);
 
 
 
-
-// apis are defined in E:\GPT\ComfyUI\custom_nodes\ComfyUI-Manager\glob\manager_server.py
-
-// @PromptServer.instance.routes.get("/manager/default_ui")
-// async def default_ui_mode(request):
-    // if "value" in request.rel_url.query:
-        // set_default_ui_mode(request.rel_url.query['value'])
-        // core.write_config()
-    // else:
-        // return web.Response(text=core.get_config()['default_ui'], status=200)
-
-    // return web.Response(status=200)
 
 /* 
 // ----------- E:\GPT\ComfyUI\custom_nodes\ComfyUI-Manager\js\comfyui-manager.js

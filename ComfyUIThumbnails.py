@@ -1,8 +1,3 @@
-from server import PromptServer
-import manager_core as core
-import cm_global
-from urllib.parse import unquote
-
 import os
 import sys
 import server
@@ -14,7 +9,12 @@ import urllib.request
 import folder_paths
 import pathlib
 
-version = 1.21
+from server import PromptServer
+import manager_core as core
+import cm_global
+from urllib.parse import unquote
+
+version = 1.22
 
 class ComfyUIThumbnails:
   RETURN_TYPES = ()
@@ -30,8 +30,7 @@ def findFile(name, path):
       return os.path.join(root, name)
 
 
-# @PromptServer.instance.routes.get("/ComfyUIThumbnails/delete")
-@PromptServer.instance.routes.get("/manager/delete")
+@PromptServer.instance.routes.get("/customnode/deleteImage")
 async def deleteImage(request):
   debug = False
   if debug: print(f"ComfyUIThumbnails request: {request}")

@@ -36,6 +36,9 @@ TODO:
 
 - [ ] browse subfolders of input
 
+### release 1.22
+- definitely chose api name as `/customnode/deleteImage`
+
 ### release 1.21
 - bugfix for nodes taht load inexistant images like SDXL Empty Latent etc
 
