@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-thumbnails"
 description = "Load Image thumbnails, delete images, browse input subfolders."
-version = "1.20"
+version = "1.21"
 license = "LICENSE"
 
 [project.urls]

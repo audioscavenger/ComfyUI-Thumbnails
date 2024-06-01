@@ -34,8 +34,8 @@ async function deleteImage(filenameUri, thisRoot) {
     // var mode = manager_instance.datasrc_combo.value;
 
     // update_all_button.innerText = "Updating all...";
-    // const response = await api.fetchApi(`/ComfyUIThumbnails/delete?value=${filenameUri}`);
-    const response = await api.fetchApi(`/manager/delete?value=${filenameUri}`);
+    const response = await api.fetchApi(`/ComfyUIThumbnails/delete?value=${filenameUri}`);
+    // const response = await api.fetchApi(`/manager/delete?value=${filenameUri}`);
     const response_json = await response.json();
     // console.log('response',response)
     // console.log('response.json()', response_json)
@@ -114,11 +114,6 @@ function urlExists(url) {
 
 async function checkLink(url) { return (await fetch(url)).ok }
 
-
-                                                                            // maybe simply, store in localStorage the list of deleted files, and avoid testing them in addImg?
-
-
-
 var addImg = async function(div, thisRoot){
   // http://127.0.0.1:8188/view?filename=__revAnimated_v122-house.png&type=input&subfolder=&t=1716949459831
   // http://127.0.0.1:8188/view?filename=__revAnimated_v122-house.png&type=input
@@ -147,6 +142,11 @@ var addImg = async function(div, thisRoot){
 
   let thumbnailSize = app.ui.settings.getSettingValue("Thumbnails.thumbnailSize");
   thumbnailSize = (thumbnailSize == undefined) ? thumbnailSizeDefault : thumbnailSize;
+  let maxHeight = thumbnailSize
+  
+  // i'd like to have so sense of which images are bigger then others
+  // let maxHeight = thumbnailSize * (Math.random() * (1.5 - 1) + 1)
+  
   let enableNames = app.ui.settings.getSettingValue("Thumbnails.enableNames");
   enableNames = (enableNames == undefined) ? false : enableNames;
   let title = (enableNames) ? '' : filename;
@@ -162,7 +162,7 @@ var addImg = async function(div, thisRoot){
   if (!enableNames) { div.classList.add('hideText'); } else { div.classList.add('showText'); }
   // 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.
   // insert thumbnail inside div
-  div.insertAdjacentHTML( 'afterBegin', `<img decoding="async" loading="lazy" width="400" height="400" style="max-height:${thumbnailSize}px" class="masonry-content" src="${src}" alt="${filenameUri}" title="${title}">` );
+  div.insertAdjacentHTML( 'afterBegin', `<img decoding="async" loading="lazy" width="400" height="400" style="max-height:${maxHeight}px" class="masonry-content" src="${src}" alt="${filenameUri}" title="${title}">` );
   
   // we need a separate span for size as font-size maybe 0 in the div
   // let spanSize = document.createElement("span");
@@ -208,6 +208,7 @@ const ext = {
   // name: "Thumbnails.ContextMenuFilterThumbnails",
   name: "Comfy.ContextMenuFilterThumbnails",
   init() {
+    // reset storage of deleted images
     localStorage.setItem('deletedImages', JSON.stringify([]));
     const ctxMenu = LiteGraph.ContextMenu;
 
@@ -215,17 +216,35 @@ const ext = {
       // values is a list of all the files in input folder                                      // or maybe the issue is that we should delete the original Comfy.ContextMenuFilter?
       const ctx = ctxMenu.call(this, values, options);
       // console.log('this',this)
-      // console.log('values',values)    // list of all the files in input folder
+      // console.log('values',values)    // list of all the files in input folder, or empty images:
+      // console.log('values?.length',values?.length)
+      //    "1536 x 640   (landscape)"
+      //    "1344 x 768   (landscape)"
       // console.log('options',options)
-
-      // If we are a dark menu (only used for combo boxes) then add a filter input
+      
+      // current_node has:
+      // title                            = Load Image / SDXL Empty Latent Image (rgthree) / ..
+      // type                             = LoadImage / SDXL Empty Latent Image (rgthree) / ..
+      // properties['Node name for S&R']  = LoadImage / SDXL Empty Latent Image (rgthree) / ..
+      
+      // new bug discovered! when you switch from one load image node dropdown to another, the values are correct but not the current_node! it just lags behind
+      // to fix it, simply select Load Image before clicking the drop down.
+      // const thisCurrentNode = LGraphCanvas.active_canvas.current_node;
+      const thisCurrentNode = options.event.view.LGraphCanvas.active_canvas.current_node;
+      // console.log('thisCurrentNode.type', thisCurrentNode.type)
+      if (thisCurrentNode?.type !== "LoadImage") return ctx;
+      
+      // If we are a dark menu (only used for combo boxes) then add a filter input, only for > 10 values
+      // the filter is added by the original Comfy.ContextMenuFilter extension that we cannot de-register, haven't found a way yet
+      // therefore, we must use the same conditions
       if (options?.className === "dark" && values?.length > 10) {
+        // console.log('options?.className',options?.className)
         // we are not replacing the menu filter, otherwise when images are filtered, the original filter listener would take over
         let filter = document.getElementsByClassName("comfy-context-menu-filter")[0];
+
         // originalFilter.parentNode.removeChild(originalFilter);
-        
         // let filter = document.createElement("input");
-        filter.classList.add("comfy-context-menu-filter");
+        // filter.classList.add("comfy-context-menu-filter");
         filter.placeholder = "Filter images";
         // this.root.prepend(filter);
 
@@ -246,7 +265,8 @@ const ext = {
         
         let enableThumbnails = app.ui.settings.getSettingValue("Thumbnails.enableThumbnails");
         enableThumbnails = (enableThumbnails == undefined) ? true : enableThumbnails;
-        if (app.ui.settings.getSettingValue("Thumbnails.enableThumbnails") === true) {    // show thumbnails instead!
+        // we only care about LoadImage types, that actually load images from input folder
+        if (enableThumbnails === true) {
           // let displayedItems = [...items.map(addImg)];
           // console.log('thisRoot',thisRoot)
           let displayedItems = [...items.map(function(x) { return addImg(x, thisRoot) })];    // we pass this to addImg for the btnDelete event to delete the item
@@ -372,7 +392,8 @@ const ext = {
             positionList();
           });
         })
-      }
+
+      } // dark
 
       return ctx;
     };

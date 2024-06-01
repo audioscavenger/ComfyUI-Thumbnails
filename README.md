@@ -28,10 +28,16 @@ Thumbnails are lazy loaded, and sized by their max-height. It looks better that 
 git clone https://github.com/audioscavenger/ComfyUI-Thumbnails
 ```
 
+## Known Issues
+When you switch/select from an Empty Latent Image preset, then select the images dropdown right after, thumbnails are not loaded. To fix this, simply select the Load Image node first / click the drop down a second time. The event that carries the current_node does not propagate immediately, this seems like a bug.
+
 ## RoadMap
 TODO:
 
 - [ ] browse subfolders of input
+
+### release 1.21
+- bugfix for nodes taht load inexistant images like SDXL Empty Latent etc
 
 ### release 1.20
 - added slide-in size

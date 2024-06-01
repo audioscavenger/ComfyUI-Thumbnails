@@ -14,7 +14,7 @@ import urllib.request
 import folder_paths
 import pathlib
 
-version = 1.20
+version = 1.21
 
 class ComfyUIThumbnails:
   RETURN_TYPES = ()
@@ -30,9 +30,9 @@ def findFile(name, path):
       return os.path.join(root, name)
 
 
-# @PromptServer.instance.routes.get("/ComfyUIThumbnails/delete")
-@PromptServer.instance.routes.get("/manager/delete")
-async def update_comfyui(request):
+@PromptServer.instance.routes.get("/ComfyUIThumbnails/delete")
+# @PromptServer.instance.routes.get("/manager/delete")
+async def deleteImage(request):
   debug = False
   if debug: print(f"ComfyUIThumbnails request: {request}")
   if debug: print(f"ComfyUIThumbnails request.rel_url: {request.rel_url}")

@@ -29,7 +29,7 @@ https://css-tricks.com/piecing-together-approaches-for-a-css-masonry-layout/
   display: inline-grid;
   /* max-height is handled by contextMenuFilterThumbnails.js since it's a manager option */
   /* max-height: 100px; */
-  /* trick to get lazy load holder size reserved: add min and max-width 100% */
+  /* trick to get lazy load holder size reserved AND keep aspect ratio: add min-width < width, and max-width 100% */
   min-width: 50px;
   max-width: 100%;
   width: auto;
@@ -40,11 +40,12 @@ https://css-tricks.com/piecing-together-approaches-for-a-css-masonry-layout/
 
 /* TODO: explore alternative: https://www.geeksforgeeks.org/css-image-overlay-hover-title/ */
 /* to control the showText, we need to hide it from the initiator */
-.litegraph .litemenu-entry, .litemenu-title {
-  font-size: 0;
-}
+/* but we cannot do that because that alters other image loaders like rgthree, while our ext is not even used */
+/* .litegraph .litemenu-entry, .litemenu-title { */
+  /* font-size: 0; */
+/* } */
 
-.hideText {
+.litegraph .hideText {
   font-size: 0;
 }
 
