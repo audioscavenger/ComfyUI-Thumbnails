@@ -1,6 +1,8 @@
 import { app } from "../../../scripts/app.js";
 import { api } from "../../../scripts/api.js";
 
+// dev console: list all event listeners:
+// Array.from(document.querySelectorAll("*")).forEach(e => { const ev = getEventListeners(e); if (Object.keys(ev).length !== 0) {console.log(e, ev)} })
 
 export function show_message(msg) {
   app.ui.dialog.show(msg);

@@ -34,7 +34,16 @@ When you switch/select from an Empty Latent Image preset, then select the images
 ## RoadMap
 TODO:
 
+### WIP 1.30
 - [ ] browse subfolders of input
+  - [x] pass subfolders as objects in py
+  - [x] show subfolders as folder icon
+  - [x] disable deleteBtn on folders
+  - [x] remove litegraph event listener
+  - [ ] build actual lost for files and subfolders in py
+  - [ ] replace thisRoot content with new subfolder content
+  - [ ] add .. folder to go back
+  - [ ] have a good night sleep
 
 ### release 1.22
 - definitely chose api name as `/customnode/deleteImage`

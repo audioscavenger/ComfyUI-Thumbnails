@@ -15,9 +15,9 @@ app.registerExtension({
   name: "ThumbnailsContextmenu",
   async setup(app) {
     app.ui.settings.addSetting({
-      id: "Thumbnails.enableNames",
-      name: "[📷] Load Image: Show File names",
-      defaultValue: false,
+      id: "Thumbnails.enableThumbnails",
+      name: "[📷] Load Image: Enable Thumbnails",
+      defaultValue: true,
       type: "boolean",
       options: (value) => [
         { value: true, text: "On", selected: value === true },
@@ -25,9 +25,9 @@ app.registerExtension({
       ],
     });
     app.ui.settings.addSetting({
-      id: "Thumbnails.enableThumbnails",
-      name: "[📷] Load Image: Show Thumbnails",
-      defaultValue: true,
+      id: "Thumbnails.enableNames",
+      name: "[📷] Load Image: Show File names",
+      defaultValue: false,
       type: "boolean",
       options: (value) => [
         { value: true, text: "On", selected: value === true },

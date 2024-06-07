@@ -2,8 +2,27 @@ import { app } from "../../../scripts/app.js";
 import { api } from "../../../scripts/api.js";
 import { generateId, injectCss, injectJs, wait, show_message } from "../../ComfyUI-Thumbnails/js/shared_utils.js";
 var thumbnailSizeDefault = 100;
+var imagesExt = ['apng', 'png', 'avif', 'gif', 'jpg', 'jpeg', 'j2k', 'j2p', 'jxl', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'tif']
 
-// we don;t need that at all
+HTMLElement.prototype.onEvent = function (eventType, callBack, useCapture) {
+this.addEventListener(eventType, callBack, useCapture);
+if (!this.myListeners) {
+    this.myListeners = [];
+};
+this.myListeners.push({ eType: eventType, callBack: callBack });
+return this;
+};
+
+HTMLElement.prototype.removeListeners = function () {
+  if (this.myListeners) {
+      for (var i = 0; i < this.myListeners.length; i++) {
+          this.removeEventListener(this.myListeners[i].eType, this.myListeners[i].callBack);
+      }
+     delete this.myListeners;
+  }
+}
+
+// we don't need that at all
 // loadScript('/ComfyUIThumbnails/js/imagesloaded.pkgd.min.js').catch((e) => {
   // console.log(e)
 // })
@@ -18,6 +37,14 @@ function pushItemToStorage(listName, item){
   var list = getListFromStorage(listName);
   list.push(item)
   localStorage.setItem(listName, JSON.stringify(list));
+}
+
+async function hideImage(filename, thisRoot) {
+  let childToDelete = thisRoot.querySelectorAll(`[data-value="${filename}"]`)[0]
+  // let childToDelete = event.target.parentNode.parentNode.querySelectorAll(`[data-value="${filename}"]`)[0]
+  // console.log('btnDelete childToDelete',childToDelete);
+  // this works but somehow it's reset later on. I haven't found what controls the content of values in LiteGraph.ContextMenu = function (values, options)
+  thisRoot.removeChild(childToDelete) && pushItemToStorage('ComfyUIThumbnailsDeletedImages', filename);
 }
 
 // apis are defined in ComfyUI\custom_nodes\ComfyUI-Manager\glob\manager_server.py
@@ -53,12 +80,8 @@ async function deleteImage(filenameUri, thisRoot) {
       // console.log('deleteImage event',event);
       let filenameDecoded = decodeURIComponent(filenameUri);
       // let nodeList = thisRoot.querySelectorAll(".litemenu-entry")
-      let childToDelete = thisRoot.querySelectorAll(`[data-value="${filenameDecoded}"]`)[0]
-      // let childToDelete = event.target.parentNode.parentNode.querySelectorAll(`[data-value="${filenameDecoded}"]`)[0]
-      // console.log('btnDelete childToDelete',childToDelete);
-      // this works but somehow it's reset later on. I haven't found what controls the content of values in LiteGraph.ContextMenu = function (values, options)
-      thisRoot.removeChild(childToDelete) && pushItemToStorage('deletedImages', filenameDecoded);
-
+      hideImage(filenameDecoded, thisRoot)
+      
       // let failed_list = "";
       // if(response_json.failed.length > 0) {
         // failed_list = "<BR>FAILED: "+response_json.failed.join(", ");
@@ -112,31 +135,55 @@ function urlExists(url) {
 
 async function checkLink(url) { return (await fetch(url)).ok }
 
+// addImg() builds the masonery of images by pulling them from the /view api defined in ComfyUI\server.py
 var addImg = async function(div, thisRoot){
-  // http://127.0.0.1:8188/view?filename=__revAnimated_v122-house.png&type=input&subfolder=&t=1716949459831
+  // http://127.0.0.1:8188/view?filename=pose-01.jpg&type=input&subfolder=pose
   // http://127.0.0.1:8188/view?filename=__revAnimated_v122-house.png&type=input
   // https://css-tricks.com/piecing-together-approaches-for-a-css-masonry-layout/
   let filename = div.getAttribute('data-value');
-  // remove iamges that were deleted in this session; there will be a bug if you re-add it, it won't show up. 
-  // therefore, must intercept onDragDrop called (widgets.js:507)
+  let fileext = filename.split('.').pop();
+  let isFolder = (filename == fileext) ? true : false;
+  // console.log(`filename=${filename} fileext=${fileext}`);
+  
+  // refuse to show anything else then images:
+  if (!imagesExt.includes(fileext) && !isFolder) {
+    hideImage(filename, thisRoot)
+    return;
+  }
+  
+  // bypass images that were deleted in this session; there will be a bug if you re-add the same image name, as it won't show up indeed.
+  // A browser refresh will empty the local storage and fix the bug
+  // Therefore, we should intercept onDragDrop called (widgets.js:507) to fix this bug
   // if (!checkLink(src)) return; // does not work fast enough
   // if (!urlExists(src)) return; // works but still slow and producces errors in console
-  // let deletedImages = getListFromStorage()
-  let deletedImages = getListFromStorage('deletedImages')
+  // let ComfyUIThumbnailsDeletedImages = getListFromStorage()
+  let deletedImages = getListFromStorage('ComfyUIThumbnailsDeletedImages')
   // console.log('filename',filename,'deletedImages',deletedImages);
   if (deletedImages.includes(filename)) return;
   
   let filenameUri = encodeURIComponent(filename);
-  let src = `view?filename=${filenameUri}&type=input`;
-  // preload image and detect size
-  let img=new Image();
-  img.onload = function() {
-    div.dataset.size = `${this.width}x${this.height}`;
-    // spanSize.dataset.size = `${this.width}x${this.height}`;
-    // spanSize.innerHTML = `${this.width}x${this.height}`;
-  }
-  img.src=src;
+  let src = 'ComfyUIThumbnails/folder.png';
+  
+  // handle 1 level of subfolders; we cannot have "/" in the filename, server.py crashes LoadImage otherwise
+  // if (filename.slice(-1) !== '/') {
+  if (!isFolder) {
+    src = `view?filename=${filenameUri}&type=input`;
 
+    // preload image and detect size
+    let img=new Image();
+    img.onload = function() {
+      div.dataset.size = `${this.width}x${this.height}`;
+    }
+    img.src=src;
+  } else {
+    div.dataset.size = filename;
+    
+    // remove click eventListener inner_onclick() from litegraph.core.js:
+    let clone = div.cloneNode(true);
+    div.replaceWith(clone);
+    div = clone
+    console.log(`folder=${filename}`);
+  }
 
   let thumbnailSize = app.ui.settings.getSettingValue("Thumbnails.thumbnailSize");
   thumbnailSize = (thumbnailSize == undefined) ? thumbnailSizeDefault : thumbnailSize;
@@ -162,30 +209,27 @@ var addImg = async function(div, thisRoot){
   // insert thumbnail inside div
   div.insertAdjacentHTML( 'afterBegin', `<img decoding="async" loading="lazy" width="400" height="400" style="max-height:${maxHeight}px" class="masonry-content" src="${src}" alt="${filenameUri}" title="${title}">` );
   
-  // we need a separate span for size as font-size maybe 0 in the div
-  // let spanSize = document.createElement("span");
-  // spanSize.classList.add("spanSize");
-  // div.appendChild(spanSize)
-
-  // add delete button at top-right
-  // div.insertAdjacentHTML( 'afterBegin', `<button type="button" class="btn btn-secondary btn-delete" onclick="event.preventDefault();">❌</button>` );
-  // div.insertAdjacentHTML( 'afterBegin', `<button type="button" class="btn btn-secondary btn-delete" data-filename="${filenameUri}">❌</button>` );
-  let btnDelete = document.createElement("button");
-  btnDelete.appendChild(document.createTextNode("❌"));
-  btnDelete.classList.add("btn");
-  btnDelete.classList.add("btn-secondary");
-  btnDelete.classList.add("btn-delete");
-  btnDelete.dataset.filename = filenameUri;
-  div.appendChild(btnDelete)
-  
-  btnDelete.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    // console.log('btnDelete event',event)
-    // console.log('btnDelete event.target.dataset.filename', event.target.dataset.filename)
-    // console.log('img',event.target.parentNode)
-    deleteImage(event.target.dataset.filename, thisRoot);
-  });
+  if (!isFolder) {
+    // add delete button at top-right
+    // div.insertAdjacentHTML( 'afterBegin', `<button type="button" class="btn btn-secondary btn-delete" onclick="event.preventDefault();">❌</button>` );
+    // div.insertAdjacentHTML( 'afterBegin', `<button type="button" class="btn btn-secondary btn-delete" data-filename="${filenameUri}">❌</button>` );
+    let btnDelete = document.createElement("button");
+    btnDelete.appendChild(document.createTextNode("❌"));
+    btnDelete.classList.add("btn");
+    btnDelete.classList.add("btn-secondary");
+    btnDelete.classList.add("btn-delete");
+    btnDelete.dataset.filename = filenameUri;
+    div.appendChild(btnDelete)
+    
+    btnDelete.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      // console.log('btnDelete event',event)
+      // console.log('btnDelete event.target.dataset.filename', event.target.dataset.filename)
+      // console.log('img',event.target.parentNode)
+      deleteImage(event.target.dataset.filename, thisRoot);
+    });
+  }
 
   // update_all_button =
     // $el("button.cm-button", {
@@ -201,6 +245,8 @@ var addImg = async function(div, thisRoot){
 
 
 // we should override the core extensions/core/contextMenuFilter.js but I don't know how. Can't use the same name.
+// main problem to get subfolder images from input, is that ComfyUI\nodes.py class LoadImage does not load subfolders
+// Therefore, we simply superseed the python class LoadImage!
 const ext = {
   // name: "Comfy.ContextMenuFilter",
   // name: "Thumbnails.ContextMenuFilterThumbnails",
@@ -211,11 +257,17 @@ const ext = {
     const ctxMenu = LiteGraph.ContextMenu;
 
     LiteGraph.ContextMenu = function (values, options) {                                        // we must find what is passing values to this function and alter the list there
+      let enableThumbnails = app.ui.settings.getSettingValue("Thumbnails.enableThumbnails");
+      enableThumbnails = (enableThumbnails == undefined) ? true : enableThumbnails;
+      if (!enableThumbnails) values = values.filter(el => typeof el === 'string' );             // we pass subfolders and their content as an object
+      
       // values is a list of all the files in input folder                                      // or maybe the issue is that we should delete the original Comfy.ContextMenuFilter?
       const ctx = ctxMenu.call(this, values, options);
       // console.log('this',this)
-      // console.log('values',values)    // list of all the files in input folder, or empty images:
+      // console.log('values',values)    // array of all the filenames as string in input folder, or empty images:
       // console.log('values?.length',values?.length)
+      // for subfolders, values are objects: { name: "subfolder", files: ['qr-nqzw-high-768.png', 'qr-with-error.png'] }
+      
       //    "1536 x 640   (landscape)"
       //    "1344 x 768   (landscape)"
       // console.log('options',options)
@@ -248,9 +300,9 @@ const ext = {
 
         let thisRoot = this.root
         // console.log('thisRoot before',thisRoot)
-        // console.log('getListFromStorage',getListFromStorage('deletedImages'))
+        // console.log('getListFromStorage',getListFromStorage('ComfyUIThumbnailsDeletedImages'))
         // we need to find what controls the content of values in LiteGraph.ContextMenu = function (values, options) and the buildup of ".litemenu-entry"
-        for (var deletedImage of getListFromStorage('deletedImages')) {
+        for (var deletedImage of getListFromStorage('ComfyUIThumbnailsDeletedImages')) {
           let childToDelete = thisRoot.querySelectorAll(`[data-value="${decodeURIComponent(deletedImage)}"]`)[0]
           // console.log('deletedImage',deletedImage,'childToDelete',childToDelete)
           if (childToDelete) thisRoot.removeChild(childToDelete)
@@ -258,17 +310,25 @@ const ext = {
         // console.log('thisRoot after',thisRoot)
 
         let items = Array.from(thisRoot.querySelectorAll(".litemenu-entry"));
+        // subfolders values are objects, but in the generated div items innerHTML/innerText, it's actually "[object Object]"
         // console.log('items',items)
         let displayedItems = [...items];
         
-        let enableThumbnails = app.ui.settings.getSettingValue("Thumbnails.enableThumbnails");
-        enableThumbnails = (enableThumbnails == undefined) ? true : enableThumbnails;
         // we only care about LoadImage types, that actually load images from input folder
         if (enableThumbnails === true) {
-          // let displayedItems = [...items.map(addImg)];
-          // console.log('thisRoot',thisRoot)
-          let displayedItems = [...items.map(function(x) { return addImg(x, thisRoot) })];    // we pass this to addImg for the btnDelete event to delete the item
+          // let displayedItems = [...items.map(addImg)]; // we need to pass thisRoot as well
+          displayedItems = [...items.map(function(el) { return addImg(el, thisRoot) })]; // we pass thisRoot to addImg so the btnDelete event can delete the item
+/*
+filtering and removing elements here does not help. We need to alter values directly, before ctx is instanced
+
+        } else {
+          // remove folder objects if any
+          // displayedItems = items.filter(el => el.innerText !== '[object Object]' ); // removing entried from the filter is insufficient, we need to delete the div too
+          items = items.filter(el => { if (el.innerText !== '[object Object]') {return el} else {el.remove()} });
+          displayedItems = [...items];
+*/
         }
+        // console.log('displayedItems',displayedItems)
         
         let itemCount = displayedItems.length;
         // console.log(`itemCount: ${itemCount}`)
@@ -352,6 +412,8 @@ const ext = {
             // Hide all items that don't match our filter
             const term = filter.value.toLocaleLowerCase();
             // When filtering, recompute which items are visible for arrow up/down and maintain selection.
+            // console.log('displayedItems',displayedItems)
+            // console.log('items',items)
             displayedItems = items.filter(item => {
               const isVisible = !term || item.textContent.toLocaleLowerCase().includes(term);
               // item.style.display = isVisible ? "block" : "none";
