@@ -2,7 +2,7 @@
 name = "comfyui-thumbnails"
 description = "Load Image thumbnails, delete images, browse input subfolders."
 version = "1.22"
-license = "LICENSE"
+license = { file = "LICENSE" }
 
 [project.urls]
 Repository = "https://github.com/audioscavenger/ComfyUI-Thumbnails"
