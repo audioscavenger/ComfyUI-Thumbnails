@@ -20,7 +20,7 @@ import node_helpers
 from PIL import Image, ImageOps, ImageSequence, ImageFile
 import numpy as np
 
-version = 1.30
+version = 1.23
 
 # debug = False
 debug = True

@@ -34,7 +34,7 @@ When you switch/select from an Empty Latent Image preset, then select the images
 ## RoadMap
 TODO:
 
-### WIP 1.30
+### Goal: 1.30
 - [ ] browse subfolders of input
   - [x] pass subfolders as objects in py
   - [x] show subfolders as folder icon
