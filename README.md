@@ -49,6 +49,9 @@ TODO:
   - [ ] replace thisRoot content with new subfolder content with new click listener
   - [ ] have a good night sleep
 
+### WIP 1.24
+- fixed ComfyUI-Thumbnails/issues/2: no dependency on node_helpers.py anymore
+
 ### WIP 1.23
 - try and fix after November 2024 upgrade to TS engine. Thumbnails are back baby!
 - BUG: second time you click on load image, foldersDict is empty -> all folders are therefore removed due to invalid extension

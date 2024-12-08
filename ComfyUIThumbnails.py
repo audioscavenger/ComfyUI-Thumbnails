@@ -16,14 +16,15 @@ import manager_core as core
 import cm_global
 import folder_paths
 import nodes
-import node_helpers
-from PIL import Image, ImageOps, ImageSequence, ImageFile
+# import node_helpers   ## node_helpers disappeared from Confy in July 2024 and broke my node, then was re-added. Cannot depend on it.
+
+from PIL import Image, ImageOps, ImageSequence, ImageFile, UnidentifiedImageError
 import numpy as np
 
-version = 1.23
+version = 1.24
 
-# debug = False
-debug = True
+debug = False
+# debug = True
 
 # # No need ot declare an empty class:
 # class ComfyUIThumbnails:
@@ -39,6 +40,21 @@ def findFile(name, path):
     if name in files:
       return os.path.join(root, name)
 
+
+## node_helpers was briefly removed from Comfy in July 2024, then re-added. Mistake or not, it broke my node.
+## No political pun intended, I swear.
+def myPillow(fn, arg):
+  prev_value = None
+  try:
+    x = fn(arg)
+  except (OSError, UnidentifiedImageError, ValueError): #PIL issues #4472 and #2445, also fixes ComfyUI issue #3416
+    prev_value = ImageFile.LOAD_TRUNCATED_IMAGES
+    ImageFile.LOAD_TRUNCATED_IMAGES = True
+    x = fn(arg)
+  finally:
+    if prev_value is not None:
+      ImageFile.LOAD_TRUNCATED_IMAGES = prev_value
+  return x
 
 
 @PromptServer.instance.routes.get("/customnode/deleteImage")
@@ -118,7 +134,8 @@ class LoadImageThumbnails:
   def load_image(self, image):
     image_path = folder_paths.get_annotated_filepath(image)
     
-    img = node_helpers.pillow(Image.open, image_path)
+    # img = node_helpers.pillow(Image.open, image_path)
+    img = myPillow(Image.open, image_path)
     
     output_images = []
     output_masks = []
@@ -127,7 +144,8 @@ class LoadImageThumbnails:
     excluded_formats = ['MPO']
     
     for i in ImageSequence.Iterator(img):
-      i = node_helpers.pillow(ImageOps.exif_transpose, i)
+      # i = node_helpers.pillow(ImageOps.exif_transpose, i)
+      i = myPillow(ImageOps.exif_transpose, i)
 
       if i.mode == 'I':
         i = i.point(lambda i: i * (1 / 255))
