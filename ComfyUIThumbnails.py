@@ -1,3 +1,5 @@
+import torch
+
 import os
 import sys
 import server
@@ -14,8 +16,14 @@ import manager_core as core
 import cm_global
 import folder_paths
 import nodes
+import node_helpers
+from PIL import Image, ImageOps, ImageSequence, ImageFile
+import numpy as np
 
 version = 1.30
+
+# debug = False
+debug = True
 
 # # No need ot declare an empty class:
 # class ComfyUIThumbnails:
@@ -35,7 +43,6 @@ def findFile(name, path):
 
 @PromptServer.instance.routes.get("/customnode/deleteImage")
 async def deleteImage(request):
-  debug = False
   if debug: print(f"ComfyUIThumbnails request: {request}")
   if debug: print(f"ComfyUIThumbnails request.rel_url: {request.rel_url}")
   if debug: print(f"ComfyUIThumbnails request.rel_url.query: {request.rel_url.query}")    # <MultiDictProxy('value': '__revAnimated_v122-house.webp')>
@@ -79,22 +86,27 @@ class LoadImageThumbnails:
     input_dir = folder_paths.get_input_directory()
     # input_dir = 'E:\\GPT\\ComfyUI'
     # If we add a / at the end of each folder so Comfy.ContextMenuFilterThumbnails extension can identify them as such, they are removed by another class
+    # So instead, we will pass objects. It's curious how Comfy cleans up strings that have a / but let pass objects
     folders = [f"{f}" for f in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, f))]
-    # print(f"LoadImage folders = {folders}", file=sys.stderr)
+    #### folders = ['misc', 'pose', 'tmp']
+    if debug: print(f"LoadImage folders = {folders}", file=sys.stderr)
+    #### files   = ['badgers.png', 'Chloe-01-1024-grey.jpg', 'Chloe-01-1024.jpg', ... ]
     files   = [f for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f))]
-    # print(f"LoadImage files   = {files}", file=sys.stderr)
+    if debug: print(f"LoadImage files   = {files}", file=sys.stderr)
 
-    # the js extension has no problem receiving a list of mixed strings nad objects! Let's use it at our advantage haha
+    # the js extension has no problem receiving a list of mixed strings and objects! Let's use it at our advantage haha
     # This is the format we need for each folder found:
-    folders = [{'name': 'misc', 'files': ['qr-nqzw-high-768.png', 'qr-with-error.png']}]
-    folders.extend(sorted(files, key=str.upper))
-    # print(f"LoadImage allFiles= {folders}", file=sys.stderr)
+    folderObjects = [{'name': F, 'files': [f for f in os.listdir(os.path.join(input_dir,F)) if os.path.isfile(os.path.join(os.path.join(input_dir,F), f))]} for F in folders]
+    # we put folder first, same order as Windows explorer
+    #### folderObjects = [{'name': 'misc', 'files': ['qr-nqzw-high-768.png', 'qr-with-error.png']}, {'name': 'pose', 'files': [...]}]
+    folderObjects.extend(sorted(files, key=str.upper))
+    if debug: print(f"LoadImage folderObjects= {folderObjects}", file=sys.stderr)
     
     
     # sorted(files,key=str.upper).extend(folders)
     return {
       "required": {
-        "image": (files, {"image_upload": True})
+        "image": (folderObjects, {"image_upload": True})
       },
     }
 

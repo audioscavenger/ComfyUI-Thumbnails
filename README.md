@@ -40,10 +40,18 @@ TODO:
   - [x] show subfolders as folder icon
   - [x] disable deleteBtn on folders
   - [x] remove litegraph event listener
-  - [ ] build actual lost for files and subfolders in py
-  - [ ] replace thisRoot content with new subfolder content
-  - [ ] add .. folder to go back
+  - [x] build actual list for files and subfolders in py
+  - [x] replace [object Object] by folder name
+  - [x] pass folders and their content to addImg
+  - [ ] create thisSubRoot content with subfolder files
+  - [ ] add .. folder to thisSubRoot
+  - [ ] store thisRoot in local storage
+  - [ ] replace thisRoot content with new subfolder content with new click listener
   - [ ] have a good night sleep
+
+### WIP 1.23
+- try and fix after November 2024 upgrade to TS engine. Thumbnails are back baby!
+- BUG: second time you click on load image, foldersDict is empty -> all folders are therefore removed due to invalid extension
 
 ### release 1.22
 - definitely chose api name as `/customnode/deleteImage`
