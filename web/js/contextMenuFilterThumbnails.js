@@ -3,14 +3,25 @@ import { api } from "../../../scripts/api.js";
 import { generateId, injectCss, injectJs, wait, show_message } from "../../ComfyUI-Thumbnails/js/shared_utils.js";  // oddly, we should not add /web in the path
 var thumbnailSizeDefault = 100;
 var imagesExt = ['apng', 'png', 'avif', 'gif', 'jpg', 'jpeg', 'j2k', 'j2p', 'jxl', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'tif']
+
 var debug = false
-var log = true
+var log = false
 
 // we don't need that at all
 // /ComfyUIThumbnails is defined in __init__.py as pointing to assets/
 // loadScript('/ComfyUIThumbnails/js/imagesloaded.pkgd.min.js').catch((e) => {
   // console.log(e)
 // })
+
+function getDictFromStorage(dictName){
+  let dictJson = localStorage.getItem(dictName);
+  let dict = (dictJson === null) ? {} : JSON.parse(dictJson);
+  return dict;
+}
+
+function pushDictToStorage(dictName, dict){
+  localStorage.setItem(dictName, JSON.stringify(dict));
+}
 
 function getListFromStorage(listName){
   let listJson = localStorage.getItem(listName);
@@ -29,15 +40,15 @@ async function deleteNode(filename, thisRoot) {
   // let childToDelete = event.target.parentNode.parentNode.querySelectorAll(`[data-value="${filename}"]`)[0]
   // console.log('btnDelete childToDelete',childToDelete);
   // this works but somehow it's reset later on. I haven't found what controls the content of values in LiteGraph.ContextMenu = function (values, options)
-  thisRoot.removeChild(childToDelete) && pushItemToStorage('ComfyUIThumbnailsDeletedImages', filename);
+  thisRoot.removeChild(childToDelete) && pushItemToStorage('thumbnails.DeletedImages', filename);
 }
 
 // apis are defined in ComfyUI\custom_nodes\ComfyUI-Manager\glob\manager_server.py
 // apis are defined in ComfyUI\custom_nodes\ComfyUI-Thumbnails\ComfyUIThumbnails.py
 // Adds filtering to combo context menus
 async function deleteImage(filenameUri, thisRoot) {
-  if (log) console.log('deleteImage filename',filenameUri)
-  if (log) console.log('deleteImage thisRoot', thisRoot)
+  if (log) console.log('deleteImage filename', filenameUri)   // badgers%20-%20Copy.png
+  if (log) console.log('deleteImage thisRoot', thisRoot)      // <div class="litegraph litecontextmenu litemenubar-panel dark" ..
   
   // let prev_text = update_all_button.innerText;
   // update_all_button.innerText = "Updating all...(ComfyUI)";
@@ -47,8 +58,8 @@ async function deleteImage(filenameUri, thisRoot) {
   try {
     const response = await api.fetchApi(`/customnode/deleteImage?value=${filenameUri}`);
     const response_json = await response.json();
-    if (debug) console.debug('response', response);
-    if (debug) console.debug('response.json()', response_json);
+    if (debug) console.debug('response', response);               // Response { type: "basic", url: "http://127.0.0.1:8188/api/customnode/deleteImage?value=badgers%20-%20Copy.png", redirected: false, status: 201, ok: true, statusText: "Created", headers: Headers(8), body: ReadableStream, bodyUsed: true }
+    if (debug) console.debug('response.json()', response_json);   // Object { found: "E:\\GPT\\ComfyUI\\input\\badgers - Copy.png", filename: "badgers - Copy.png", status: "success" }
 
     if (response.status == 403) {
       show_message(`Error deleting image ${filenameUri}: OS refused`);
@@ -61,8 +72,8 @@ async function deleteImage(filenameUri, thisRoot) {
     }
 
     if(response.status == 200 || response.status == 201) {
-      if (debug) console.debug('response_json',response_json);   /* {found: 'E:\\GPT\\ComfyUI\\input\\file-01 - Copy (3).jpg', filename: 'file-01 - Copy (3).jpg', status: 'success'} */
-      if (debug) console.debug('deleteImage event',event);    /* 'event' is deprecated.ts(6385) */
+      if (debug) console.debug('response_json',response_json);    // {found: 'E:\\GPT\\ComfyUI\\input\\file-01 - Copy (3).jpg', filename: 'file-01 - Copy (3).jpg', status: 'success'}
+      // if (debug) console.debug('deleteImage event', event);    // this is now undefined, as 'event' is deprecated.ts(6385)
       let filenameDecoded = decodeURIComponent(filenameUri);
       // let nodeList = thisRoot.querySelectorAll(".litemenu-entry")
       deleteNode(filenameDecoded, thisRoot)
@@ -123,22 +134,30 @@ async function checkLink(url) { return (await fetch(url)).ok }
 // addImg() builds the masonery of images by pulling them from the /view api defined in ComfyUI\server.py
 // folders     = [{name:name1, files:[filename1, ..]}, ..]
 // foldersDict = {{name1: [filename1, ..], ..}
+// 1.25: foldersDict = getListFromStorage('thumbnails.Folders') = [{ "name": "name1", "files": ["file11.png", "file12.png"]}, { "name": "name2", "files": ["file21.png", "file22.png"]}]
 // BUG: second time you click on load image, foldersDict is empty -> all folders are therefore removed due to invalid extension
-var addImg = async function(div, thisRoot, foldersDict){
+// BUG: subfolder argument doesn't work anymore after switch to TS
+// var addImg = async function(div, thisRoot, foldersDict){
+var addImg = async function(div, thisRoot){
   // http://127.0.0.1:8188/view?filename=pose-01.jpg&type=input&subfolder=pose
-  // http://127.0.0.1:8188/view?filename=__revAnimated_v122-house.png&type=input
+  // http://127.0.0.1:8188/view?filename=ComfyUI_00011_.png&type=input
   // https://css-tricks.com/piecing-together-approaches-for-a-css-masonry-layout/
   if (debug) console.debug('addImg: div', div);
   if (debug) console.debug('addImg: thisRoot', thisRoot);
-  if (log) console.log('addImg: foldersDict', foldersDict);
+  if (debug) console.log('addImg: getListFromStorage', getListFromStorage('thumbnails.Folders'));
+
+  let foldersDict = getDictFromStorage('thumbnails.Folders')  // 1.25: now we rebuild foldersDict here, it's the only way to not lose its content because we alter 'values' in ext
+  if (debug) console.log('addImg: foldersDict', foldersDict);
   
   // add masonery css to the div
   div.classList.add("masonry-item");
   
-  let filename = div.getAttribute('data-value');
+  let filename = div.getAttribute('data-value');          // folder object: [object Object]
   let fileext = filename.split('.').pop();
   // let isFolder = (filename == fileext) ? true : false;
   let isFolder = (foldersDict[filename]) ? true : false;
+
+  // if (log) console.log('addImg: filename=', filename); // folder object: [object Object]
   if (log) console.log(`addImg: filename=${filename} fileext=${fileext} isFolder=${isFolder} foldersDict[${filename}]=`, foldersDict[filename]);
   
   // refuse to show anything else then images and folders: as a matter of fact, LoadImage will not filter images and return every file
@@ -154,8 +173,8 @@ var addImg = async function(div, thisRoot, foldersDict){
   // Therefore, we should intercept onDragDrop called (widgets.js:507) to fix this bug
   // if (!checkLink(src)) return; // does not work fast enough
   // if (!urlExists(src)) return; // works but still slow and producces errors in console
-  // let ComfyUIThumbnailsDeletedImages = getListFromStorage()
-  let deletedImages = getListFromStorage('ComfyUIThumbnailsDeletedImages')
+  // let thumbnails.DeletedImages = getListFromStorage()
+  let deletedImages = getListFromStorage('thumbnails.DeletedImages')
   if (debug) console.debug('addImg: filename', filename, 'deletedImages', deletedImages);
   if (deletedImages.includes(filename)) return;
   
@@ -167,6 +186,7 @@ var addImg = async function(div, thisRoot, foldersDict){
   // if (filename.slice(-1) !== '/') {
   if (!isFolder) {
     src = `view?filename=${filenameUri}&type=input`;
+    // "/view?" + new URLSearchParams(filepath).toString() + app.getPreviewFormatParam() + app.getRandParam()
 
     // preload image and detect size
     let img=new Image();
@@ -258,7 +278,7 @@ const ext = {
   init(event) {
     if (debug) console.debug('Extension: init event ----------------', event);  // Object { vueAppReady: true, ui: {…}, logging: {…}, extensions: (201) […], extensionManager: Proxy, _nodeOutputs: {}, nodePreviewImages: {}, graph: {…}, ..
     // reset storage of deleted images
-    localStorage.setItem('ComfyUIThumbnailsDeletedImages', JSON.stringify([]));
+    localStorage.setItem('thumbnails.DeletedImages', JSON.stringify([]));
     const ctxMenu = LiteGraph.ContextMenu;
     if (debug) console.debug('Extension: ctxMenu ----------------', ctxMenu);   // function ContextMenu(values, options)
 
@@ -284,36 +304,39 @@ const ext = {
       
       // cleanup values from folder objects if any, keep only names
       if (debug) console.debug('Extension: options', options)
-      if (debug) console.debug('Extension: values before', values)
+      if (log) console.debug('Extension: values before', values)  // [{"folder1":[file1,..]}, "file1.png", ..]
       if (debug) console.debug('Extension: values?.length before', values?.length)
       // item = "filename1.png" or object { "name": "name1", "files": ["file1.png", ..]}
 
-      let foldersDict = {}
+      let foldersDict = getDictFromStorage('thumbnails.Folders')   // second pass and we cannot rebuild this as folder objects are removed from values
       let forDeletion = []
       // let folder = {}
       values.forEach((item, i) => {
         if (typeof item == 'object') {
 
-          // build foldersDict that we will use later to rebuild ctx with new values
-          foldersDict[item.name] = item?.files
+          // build foldersDict that we will use later to rebuild ctx with new values; do not re-add same folder twice.
+          if (!foldersDict[item.name]) foldersDict[item.name] = item?.files
           
-          // just replace folder object with just its name
+          // just replace folder object with just its name // 1.24: doing that, second click will show no folders
           values[i] = item['name']
+
           // and mark it for deletion if not enableThumbnails
           if (!enableThumbnails) forDeletion.push(item['name'])
         }
       });
-      if (!enableThumbnails) values = values.filter(item => !forDeletion.includes(item))
-      if (debug) console.debug('Extension: forDeletion',forDeletion) // ["folder1",  ..]
-      if (debug) console.debug('Extension: values after',values)     // ["folder1", "file1.png", ..]
+      pushDictToStorage('thumbnails.Folders', foldersDict);
 
-      if (debug) console.debug('Extension: foldersDict',foldersDict) // {"misc": ["qr-error_corrected-example (1).png", ..], ..}
+      if (!enableThumbnails) values = values.filter(item => !forDeletion.includes(item))
+      if (log) console.debug('Extension: forDeletion', forDeletion) // ["file1.png",  ..]
+      if (log) console.debug('Extension: values after', values)     // ["folder1", "file1.png", ..]
+
+      if (log) console.log('Extension: foldersDict', foldersDict) // {"misc": ["qr-error_corrected-example (1).png", ..], ..}
       
-      // values is a list of all the files in input folder                                      // or maybe the issue is that we should delete the original Comfy.ContextMenuFilter?
+      // values is a list of all the files in input folder // or maybe the issue is that we should delete the original Comfy.ContextMenuFilter?
       let ctx = ctxMenu.call(this, values, options);
       if (debug) console.debug('Extension: ctx', ctx)
       if (!enableThumbnails) return ctx;
-      if (debug) console.debug('Extension: values?.length after',values?.length)
+      if (debug) console.debug('Extension: values?.length after', values?.length)
       
       //    "1536 x 640   (landscape)"
       //    "1344 x 768   (landscape)"
@@ -346,9 +369,9 @@ const ext = {
         // let thisRoot = this.root                 // 'this' is undefined after October 2024 upgrade to TS
         let thisRoot = ctx.root
         if (debug) console.debug('Extension: thisRoot before', thisRoot)  // undefined after October 2024 upgrade to TS
-        if (debug) console.debug('Extension: getListFromStorage', getListFromStorage('ComfyUIThumbnailsDeletedImages'))   // empty until you delete smth
+        if (debug) console.debug('Extension: getListFromStorage', getListFromStorage('thumbnails.DeletedImages'))   // empty until you delete smth
         // we need to find what controls the content of values in LiteGraph.ContextMenu = function (values, options) and the buildup of ".litemenu-entry"
-        for (var deletedImage of getListFromStorage('ComfyUIThumbnailsDeletedImages')) {
+        for (var deletedImage of getListFromStorage('thumbnails.DeletedImages')) {
           let childToDelete = thisRoot.querySelectorAll(`[data-value="${decodeURIComponent(deletedImage)}"]`)[0]
           if (debug) console.debug('Extension: deletedImage', deletedImage, 'childToDelete', childToDelete)
           if (childToDelete) thisRoot.removeChild(childToDelete)
@@ -357,14 +380,19 @@ const ext = {
 
         let items = Array.from(thisRoot.querySelectorAll(".litemenu-entry"));
         // subfolders values are objects, but in the generated div items innerHTML/innerText, it's actually "[object Object]"
-        if (debug) console.debug('Extension: items', items)
+        if (log) console.debug('Extension: items', items)
+        // Array(18) [ div.litemenu-entry.submenu, .. ]
+        //    <div class="litemenu-entry submenu masonry-item" role="menuitem" data-value="[object Object]">
+        //    <div class="litemenu-entry submenu masonry-item hideText" role="menuitem" data-value="badgers - Copy.png" data-size="1024x1024">
+        //    ...
         let displayedItems = [...items];
         
         // we only care about LoadImage types, that actually load images from input folder
         if (enableThumbnails === true) {
           // let displayedItems = [...items.map(addImg)]; // we need to pass thisRoot as well
           // displayedItems = [...items.map(function(el) { return addImg(el, thisRoot, folders) })]; // we pass thisRoot to addImg so the btnDelete event can delete the item
-          displayedItems = [...items.map(function(el) { return addImg(el, thisRoot, foldersDict) })]; // we pass thisRoot to addImg so the btnDelete event can delete the item
+          // displayedItems = [...items.map(function(el) { return addImg(el, thisRoot, foldersDict) })]; // we pass thisRoot to addImg so the btnDelete event can delete the item
+          displayedItems = [...items.map(function(el) { return addImg(el, thisRoot) })]; // foldersDict is now getListFromStorage('thumbnails.Folders')
 /*
 filtering and removing elements here does not help. We need to alter values directly, before ctx is instanced
 
@@ -375,7 +403,7 @@ filtering and removing elements here does not help. We need to alter values dire
           displayedItems = [...items];
 */
         }
-        if (debug) console.debug('Extension: displayedItems', displayedItems)
+        if (log) console.log('Extension: displayedItems', displayedItems)
         
         let itemCount = displayedItems.length;
         if (debug) console.debug(`Extension: itemCount: ${itemCount}`)

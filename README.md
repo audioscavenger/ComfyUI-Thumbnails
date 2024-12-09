@@ -36,6 +36,7 @@ TODO:
 
 ### Goal: 1.30
 - [ ] browse subfolders of input
+  - [ ] fix subfolder image calls: view&subfolder=folder stopped working
   - [x] pass subfolders as objects in py
   - [x] show subfolders as folder icon
   - [x] disable deleteBtn on folders
@@ -48,6 +49,9 @@ TODO:
   - [ ] store thisRoot in local storage
   - [ ] replace thisRoot content with new subfolder content with new click listener
   - [ ] have a good night sleep
+
+### WIP 1.25
+- moved foldersDict in storage, and fixed folder icons
 
 ### WIP 1.24
 - fixed ComfyUI-Thumbnails/issues/2: no dependency on node_helpers.py anymore
