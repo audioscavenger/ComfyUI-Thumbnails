@@ -50,6 +50,11 @@ TODO:
   - [ ] replace thisRoot content with new subfolder content with new click listener
   - [ ] have a good night sleep
 
+### WIP 1.26
+- added version prompt at loading time
+- added import hashlib
+- fixed LoadImage override properly in __init__ and main class
+
 ### WIP 1.25
 - moved foldersDict in storage, and fixed folder icons
 

@@ -10,24 +10,25 @@ import aiohttp
 import urllib.request
 import pathlib
 from urllib.parse import unquote
+import hashlib
 
 from server import PromptServer
 import manager_core as core
 import cm_global
 import folder_paths
 import nodes
-# import node_helpers   ## node_helpers disappeared from Confy in July 2024 and broke my node, then was re-added. Cannot depend on it.
+# import node_helpers   ## node_helpers disappeared from Comfy in July 2024 and broke my node, then was re-added. Cannot depend on it.
 
 from PIL import Image, ImageOps, ImageSequence, ImageFile, UnidentifiedImageError
 import numpy as np
 
-version = 1.25
+version = 1.26
 
 debug = False
 # debug = True
 
 # # No need ot declare an empty class:
-# class ComfyUIThumbnails:
+# class LoadImageThumbnails:
   # RETURN_TYPES = ()
   # OUTPUT_NODE = False
 
@@ -59,9 +60,9 @@ def myPillow(fn, arg):
 
 @PromptServer.instance.routes.get("/customnode/deleteImage")
 async def deleteImage(request):
-  if debug: print(f"ComfyUIThumbnails request: {request}")
-  if debug: print(f"ComfyUIThumbnails request.rel_url: {request.rel_url}")
-  if debug: print(f"ComfyUIThumbnails request.rel_url.query: {request.rel_url.query}")    # <MultiDictProxy('value': '__revAnimated_v122-house.webp')>
+  if debug: print(f"LoadImageThumbnails request: {request}")
+  if debug: print(f"LoadImageThumbnails request.rel_url: {request.rel_url}")
+  if debug: print(f"LoadImageThumbnails request.rel_url.query: {request.rel_url.query}")    # <MultiDictProxy('value': '__revAnimated_v122-house.webp')>
 
   input_dir = folder_paths.get_input_directory()
   res = {'found': None, 'filename': None, 'status': 'missing'}
@@ -70,33 +71,34 @@ async def deleteImage(request):
     filename = unquote(unquote(request.rel_url.query['value']))
     res['filename'] = filename
     
-    if debug: print(f"ComfyUIThumbnails filename: {filename}", file=sys.stderr)
+    if debug: print(f"LoadImageThumbnails filename: {filename}", file=sys.stderr)
     found = findFile(filename, input_dir)
     if not found:
-      if debug: print(f"ComfyUIThumbnails 400 {found} not found", file=sys.stderr)
+      if debug: print(f"LoadImageThumbnails 400 {found} not found", file=sys.stderr)
       res['status'] = 'not found'
       return web.json_response(res, status=400, content_type='application/json')
 
-    if debug: print(f"ComfyUIThumbnails deleting {found}", file=sys.stderr)
+    if debug: print(f"LoadImageThumbnails deleting {found}", file=sys.stderr)
     res['found'] = found
     try:
       os.remove(found)
-      if debug: print(f"ComfyUIThumbnails 201 deleted {found}", file=sys.stderr)
+      if debug: print(f"LoadImageThumbnails 201 deleted {found}", file=sys.stderr)
       res['status'] = 'success'
       # return web.Response(status=201)
       return web.json_response(res, status=201, content_type='application/json')
     except Exception as e:
-      print(f"ComfyUIThumbnails 400 delete {found} fail: {e}", file=sys.stderr)
+      print(f"LoadImageThumbnails 400 delete {found} fail: {e}", file=sys.stderr)
       res['status'] = e
       return web.json_response(res, status=400, content_type='application/json')
 
-  print(f"ComfyUIThumbnails 400 no filename", file=sys.stderr)
+  print(f"LoadImageThumbnails 400 no filename", file=sys.stderr)
   return web.json_response(res, status=400, content_type='application/json')
 
 
 # we override the original ComfyUI\nodes.py class LoadImage to list subfolders
 class LoadImageThumbnails:
-# class LoadImage:
+  print(f"\033[92m[LoadImageThumbnails]\033[0m version: {version}\033[0m")
+  
   @classmethod
   def INPUT_TYPES(s):
     input_dir = folder_paths.get_input_directory()
@@ -130,11 +132,10 @@ class LoadImageThumbnails:
 
   RETURN_TYPES = ("IMAGE", "MASK")
   FUNCTION = "load_image"
-
   def load_image(self, image):
     image_path = folder_paths.get_annotated_filepath(image)
     
-    # img = node_helpers.pillow(Image.open, image_path)
+    # img = node_helpers.pillow(Image.open, image_path) // cannot rely on node_helpers anymore
     img = myPillow(Image.open, image_path)
     
     output_images = []
@@ -144,7 +145,7 @@ class LoadImageThumbnails:
     excluded_formats = ['MPO']
     
     for i in ImageSequence.Iterator(img):
-      # i = node_helpers.pillow(ImageOps.exif_transpose, i)
+      # i = node_helpers.pillow(ImageOps.exif_transpose, i) // cannot rely on node_helpers anymore
       i = myPillow(ImageOps.exif_transpose, i)
 
       if i.mode == 'I':
@@ -194,9 +195,9 @@ class LoadImageThumbnails:
 
 
 NODE_CLASS_MAPPINGS = {
-  'LoadImageThumbnails': LoadImageThumbnails,
+  'LoadImage': LoadImageThumbnails,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-  'LoadImage': 'Load Image +Tumbnails',
+  'LoadImage': 'Load Image+Thumbnails',
 }

@@ -4,8 +4,8 @@ import { generateId, injectCss, injectJs, wait, show_message } from "../../Comfy
 var thumbnailSizeDefault = 100;
 var imagesExt = ['apng', 'png', 'avif', 'gif', 'jpg', 'jpeg', 'j2k', 'j2p', 'jxl', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'tif']
 
-var debug = false
-var log = false
+var debug = true
+var log = true
 
 // we don't need that at all
 // /ComfyUIThumbnails is defined in __init__.py as pointing to assets/
@@ -179,8 +179,8 @@ var addImg = async function(div, thisRoot){
   if (deletedImages.includes(filename)) return;
   
   let filenameUri = encodeURIComponent(filename);
-  // /ComfyUIThumbnails is defined in __init__.py as pointing to assets/
-  let src = 'ComfyUIThumbnails/folder.png';
+  // /LoadImageThumbnails is defined in __init__.py as pointing to assets/
+  let src = 'LoadImageThumbnails/folder.png';
   
   // handle 1 level of subfolders; we cannot have "/" in the filename, server.py crashes LoadImage otherwise
   // if (filename.slice(-1) !== '/') {
@@ -296,7 +296,7 @@ const ext = {
       // exclude KJNodes empty latent presets and other similar fake image lists
       // if (debug) console.debug('Extension: this', this)                                   // Object { }  // empty after upgrade to TS
       if (debug) console.debug('Extension: thisCurrentNode', thisCurrentNode)
-      if (debug) console.debug('Extension: thisCurrentNode.type', thisCurrentNode.type)   // LoadImage
+      if (debug) console.debug('Extension: thisCurrentNode.type', thisCurrentNode?.type)   // LoadImage
       if (thisCurrentNode?.type !== "LoadImage") return ctxMenu.call(this, values, options);
 
       let enableThumbnails = app.ui.settings.getSettingValue("Thumbnails.enableThumbnails");
