@@ -4,8 +4,10 @@ import { generateId, injectCss, injectJs, wait, show_message } from "../../Comfy
 var thumbnailSizeDefault = 100;
 var imagesExt = ['apng', 'png', 'avif', 'gif', 'jpg', 'jpeg', 'j2k', 'j2p', 'jxl', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'tif']
 
-var debug = true
-var log = true
+var debug = false
+var log = false
+// var debug = true
+// var log = true
 
 // we don't need that at all
 // /ComfyUIThumbnails is defined in __init__.py as pointing to assets/
