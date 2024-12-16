@@ -314,7 +314,7 @@ const ext = {
       let forDeletion = []
       // let folder = {}
       values.forEach((item, i) => {
-        if (typeof item == 'object') {
+        if (typeof item == 'object' && item !== null) {
 
           // build foldersDict that we will use later to rebuild ctx with new values; do not re-add same folder twice.
           if (!foldersDict[item.name]) foldersDict[item.name] = item?.files
