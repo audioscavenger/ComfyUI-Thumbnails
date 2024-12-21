@@ -133,6 +133,13 @@ function urlExists(url) {
 
 async function checkLink(url) { return (await fetch(url)).ok }
 
+
+//  █████  ██████  ██████  ██ ███    ███  ██████  
+// ██   ██ ██   ██ ██   ██ ██ ████  ████ ██       
+// ███████ ██   ██ ██   ██ ██ ██ ████ ██ ██   ███ 
+// ██   ██ ██   ██ ██   ██ ██ ██  ██  ██ ██    ██ 
+// ██   ██ ██████  ██████  ██ ██      ██  ██████  
+
 // addImg() builds the masonery of images by pulling them from the /view api defined in ComfyUI\server.py
 // folders     = [{name:name1, files:[filename1, ..]}, ..]
 // foldersDict = {{name1: [filename1, ..], ..}
@@ -140,10 +147,12 @@ async function checkLink(url) { return (await fetch(url)).ok }
 // BUG: second time you click on load image, foldersDict is empty -> all folders are therefore removed due to invalid extension
 // BUG: subfolder argument doesn't work anymore after switch to TS
 // var addImg = async function(div, thisRoot, foldersDict){
-var addImg = async function(div, thisRoot){
-  // http://127.0.0.1:8188/view?filename=pose-01.jpg&type=input&subfolder=pose
+// var addImg = async function(div, thisRoot,ctxMenu, values, options, thiss){
+var addImg = async function(div, thisRoot, ctxMenu, options){
+  // http://127.0.0.1:8188/view?subfolder=pose&filename=pose-01.jpg&type=input
   // http://127.0.0.1:8188/view?filename=ComfyUI_00011_.png&type=input
   // https://css-tricks.com/piecing-together-approaches-for-a-css-masonry-layout/
+  if (debug) console.debug('addImg: options', options);
   if (debug) console.debug('addImg: div', div);
   if (debug) console.debug('addImg: thisRoot', thisRoot);
   if (debug) console.log('addImg: getListFromStorage', getListFromStorage('thumbnails.Folders'));
@@ -197,6 +206,14 @@ var addImg = async function(div, thisRoot){
     }
     img.src=src;
   } else {
+
+    // ███████  ██████  ██      ██████  ███████ ██████  
+    // ██      ██    ██ ██      ██   ██ ██      ██   ██ 
+    // █████   ██    ██ ██      ██   ██ █████   ██████  
+    // ██      ██    ██ ██      ██   ██ ██      ██   ██ 
+    // ██       ██████  ███████ ██████  ███████ ██   ██ 
+
+
     div.classList.add("folder");
     div.dataset.size = filename;
     div.dataset.files = foldersDict[filename];
@@ -204,10 +221,24 @@ var addImg = async function(div, thisRoot){
     if (debug) console.debug('addImg: foldersDict',foldersDict);
     // for (const folder of folders) {if (folder.name == filename) files = folder.files }
     
-    // remove click eventListener inner_onclick() from litegraph.core.js: == removeListeners as we cannot remove a listener created outside this scope
+    // cloning the div removes click eventListener inner_onclick() from litegraph.core.js: == removeListeners as we cannot remove a listener created outside this scope
     let divClone = div.cloneNode(true);
     div.replaceWith(divClone);
     div = divClone
+    div.onclick = () => {
+
+			console.log(foldersDict[filename]);               // this prints the correct list of files inside that folder
+			// console.log('thiss',thiss);                       // undefined
+			// console.log('values',values);                     // Array(19) [ "3d", "misc", "pose", "tmp", "badgers.png", ..
+			console.log('options',options);                   // Object { scale: 1, event: pointerdown, className: "dark", ..
+
+      if (options?.folder !== filename && !foldersDict[filename][0].startsWith(filename)) {
+        options.folder = filename                         // goal is to use this extra option as subfolder, not sure how yet; now we just check if we're in a subfolder already
+        foldersDict[filename] = foldersDict[filename].map(file => { return `${filename}/${file}` });
+      }
+
+      return ctxMenu.call({}, foldersDict[filename], options);   // this reloads LoadImage only, no css, with correct list of files, but on top of the other
+		}
   }
 
   let thumbnailSize = app.ui.settings.getSettingValue("Thumbnails.thumbnailSize");
@@ -279,6 +310,7 @@ const ext = {
   name: "Comfy.ContextMenuFilterThumbnails",
   init(event) {
     if (debug) console.debug('Extension: init event ----------------', event);  // Object { vueAppReady: true, ui: {…}, logging: {…}, extensions: (201) […], extensionManager: Proxy, _nodeOutputs: {}, nodePreviewImages: {}, graph: {…}, ..
+    // if (debug) console.debug('event.target.id: ',event.target.id);  // no target == is this a reak event?
     // reset storage of deleted images
     localStorage.setItem('thumbnails.DeletedImages', JSON.stringify([]));
     const ctxMenu = LiteGraph.ContextMenu;
@@ -306,7 +338,7 @@ const ext = {
       
       // cleanup values from folder objects if any, keep only names
       if (debug) console.debug('Extension: options', options)
-      if (log) console.debug('Extension: values before', values)  // [{"folder1":[file1,..]}, "file1.png", ..]
+      if (debug) console.debug('Extension: values before', values)  // [{"folder1":[file1,..]}, "file1.png", ..]
       if (debug) console.debug('Extension: values?.length before', values?.length)
       // item = "filename1.png" or object { "name": "name1", "files": ["file1.png", ..]}
 
@@ -358,7 +390,7 @@ const ext = {
       // the filter is added by the original Comfy.ContextMenuFilter extension that we cannot de-register, haven't found a way yet
       // at least we can override it for less than 10 images
       if (options?.className === "dark" && values?.length > 1) {
-        // if (debug) console.debug('Extension: options?.className',options?.className)
+        if (debug) console.debug('Extension: options?.className',options?.className)
         // we are not replacing the menu filter, otherwise when images are filtered, the original filter listener would take over
         let filter = document.getElementsByClassName("comfy-context-menu-filter")[0];
 
@@ -388,13 +420,19 @@ const ext = {
         //    <div class="litemenu-entry submenu masonry-item hideText" role="menuitem" data-value="badgers - Copy.png" data-size="1024x1024">
         //    ...
         let displayedItems = [...items];
-        
+
+        //  █████  ██████  ██████      ██ ███    ███  ██████      ███    ██  ██████  ██     ██ 
+        // ██   ██ ██   ██ ██   ██     ██ ████  ████ ██           ████   ██ ██    ██ ██     ██ 
+        // ███████ ██   ██ ██   ██     ██ ██ ████ ██ ██   ███     ██ ██  ██ ██    ██ ██  █  ██ 
+        // ██   ██ ██   ██ ██   ██     ██ ██  ██  ██ ██    ██     ██  ██ ██ ██    ██ ██ ███ ██ 
+        // ██   ██ ██████  ██████      ██ ██      ██  ██████      ██   ████  ██████   ███ ███  
+
         // we only care about LoadImage types, that actually load images from input folder
         if (enableThumbnails === true) {
           // let displayedItems = [...items.map(addImg)]; // we need to pass thisRoot as well
           // displayedItems = [...items.map(function(el) { return addImg(el, thisRoot, folders) })]; // we pass thisRoot to addImg so the btnDelete event can delete the item
           // displayedItems = [...items.map(function(el) { return addImg(el, thisRoot, foldersDict) })]; // we pass thisRoot to addImg so the btnDelete event can delete the item
-          displayedItems = [...items.map(function(el) { return addImg(el, thisRoot) })]; // foldersDict is now getListFromStorage('thumbnails.Folders')
+          displayedItems = [...items.map(function(el) { return addImg(el, thisRoot, ctxMenu, options) })]; // foldersDict is now getListFromStorage('thumbnails.Folders')
 /*
 filtering and removing elements here does not help. We need to alter values directly, before ctx is instanced
 

@@ -1,5 +1,5 @@
 # [📷] Load Image Thumbnails for ComfyUI
-Load Image thumbnails, delete images, browse input subfolders.
+Load Image thumbnails, delete images, browse input subfolders. Subfolders now load images!
 
 <p align="center">
  <img src="assets/ComfyUI-Thumbnails-featured-meme.webp" />
@@ -49,6 +49,9 @@ TODO:
   - [ ] store thisRoot in local storage
   - [ ] replace thisRoot content with new subfolder content with new click listener
   - [ ] have a good night sleep
+
+### WIP 1.27
+- now we load subfolders, correct image paths, images load, but no thumbnails and original widget does not auto-close
 
 ### WIP 1.26
 - added version prompt at loading time
