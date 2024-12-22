@@ -30,14 +30,15 @@ git clone https://github.com/audioscavenger/ComfyUI-Thumbnails
 ```
 
 ## Known Issues
-Images loaded from subfolders will not close the parent folder yet. Just click anywhere to close the dialog.
+- Images loaded from subfolders will not close the parent folder yet. Just click anywhere to close the dialog.
+- does not handle more than 1 level of subfolders
 
 ## RoadMap
-TODO:
 
 ### Goal: 1.30
-- [ ] browse subfolders of input
-  - [ ] fix subfolder image calls: view&subfolder=folder stopped working
+- [ ] fix parent root folder not closing or live with it
+- [x] browse subfolders of input - yay we did it!
+  - [x] fix subfolder image calls: view&subfolder=folder stopped working
   - [x] pass subfolders as objects in py
   - [x] show subfolders as folder icon
   - [x] disable deleteBtn on folders
@@ -45,11 +46,14 @@ TODO:
   - [x] build actual list for files and subfolders in py
   - [x] replace [object Object] by folder name
   - [x] pass folders and their content to addImg
-  - [ ] create thisSubRoot content with subfolder files
-  - [ ] add .. folder to thisSubRoot
-  - [ ] store thisRoot in local storage
-  - [ ] replace thisRoot content with new subfolder content with new click listener
+  - [x] create thisSubRoot content with subfolder files - kind of
+  - [x] add .. folder to thisSubRoot
+  - [x] store thisRoot in local storage - just files dictionary
+  - [x] replace thisRoot content with new subfolder content with new click listener
   - [ ] have a good night sleep
+
+### WIP 1.30
+- now we load subfolders, correct image paths, images load, but we can't close the root LoadImage widget
 
 ### WIP 1.27
 - now we load subfolders, correct image paths, images load, but we can't close the root LoadImage widget

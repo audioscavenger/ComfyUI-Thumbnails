@@ -22,7 +22,7 @@ import nodes
 from PIL import Image, ImageOps, ImageSequence, ImageFile, UnidentifiedImageError
 import numpy as np
 
-version = 1.27
+version = 1.30
 
 debug = False
 # debug = True
