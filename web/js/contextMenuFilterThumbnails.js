@@ -152,7 +152,8 @@ var addImg = async function(div, thisRoot, ctxMenu, options){
   // http://127.0.0.1:8188/view?subfolder=pose&filename=pose-01.jpg&type=input
   // http://127.0.0.1:8188/view?filename=ComfyUI_00011_.png&type=input
   // https://css-tricks.com/piecing-together-approaches-for-a-css-masonry-layout/
-  if (debug) console.debug('addImg: options', options);
+  if (true) console.debug('addImg: ctxMenu', ctxMenu);
+  if (true) console.debug('addImg: options', options);
   if (debug) console.debug('addImg: div', div);
   if (debug) console.debug('addImg: thisRoot', thisRoot);
   if (debug) console.log('addImg: getListFromStorage', getListFromStorage('thumbnails.Folders'));
@@ -163,13 +164,14 @@ var addImg = async function(div, thisRoot, ctxMenu, options){
   // add masonery css to the div
   div.classList.add("masonry-item");
   
-  let filename = div.getAttribute('data-value');          // folder object: [object Object]
+  let filename = div.getAttribute('data-value');
   let fileext = filename.split('.').pop();
   // let isFolder = (filename == fileext) ? true : false;
-  let isFolder = (foldersDict[filename]) ? true : false;
+  let isFolder = (foldersDict[filename] || filename == '..') ? true : false;
 
-  // if (log) console.log('addImg: filename=', filename); // folder object: [object Object]
-  if (log) console.log(`addImg: filename=${filename} fileext=${fileext} isFolder=${isFolder} foldersDict[${filename}]=`, foldersDict[filename]);
+
+  if (debug) console.log('addImg: filename=', filename); // misc, foldername2... or example.png, etc
+  if (debug) console.log(`addImg: filename=${filename} fileext=${fileext} isFolder=${isFolder} foldersDict[${filename}]=`, foldersDict[filename]);
   
   // refuse to show anything else then images and folders: as a matter of fact, LoadImage will not filter images and return every file
   // Therefore, we also filter out extensions not in imagesExt
@@ -196,8 +198,14 @@ var addImg = async function(div, thisRoot, ctxMenu, options){
   // handle 1 level of subfolders; we cannot have "/" in the filename, server.py crashes LoadImage otherwise
   // if (filename.slice(-1) !== '/') {
   if (!isFolder) {
-    src = `view?filename=${filenameUri}&type=input`;
-    // "/view?" + new URLSearchParams(filepath).toString() + app.getPreviewFormatParam() + app.getRandParam()
+    if (true) console.log('addImg: options?.folder == filename?',options?.folder,filename);
+    if (options?.folder !== undefined) {
+      src = `view?subfolder=${encodeURIComponent(options?.folder)}&filename=${filenameUri}&type=input`;
+    } else {
+      src = `view?filename=${filenameUri}&type=input`;
+      // "/view?" + new URLSearchParams(filepath).toString() + app.getPreviewFormatParam() + app.getRandParam()
+    }
+    if (true) console.log('addImg: src',src);
 
     // preload image and detect size
     let img=new Image();
@@ -226,20 +234,32 @@ var addImg = async function(div, thisRoot, ctxMenu, options){
     div.replaceWith(divClone);
     div = divClone
     div.onclick = () => {
+      if (true) console.debug('addImg: click filename=',filename);
+      if (filename == '..') {
+        div.parentElement.remove();
+        return;
+      }
+      options.folder = filename   // goal is to use this extra option as subfolder, not sure how yet; now we just check if we're in a subfolder already
 
-			console.log(foldersDict[filename]);               // this prints the correct list of files inside that folder
-			// console.log('thiss',thiss);                       // undefined
-			// console.log('values',values);                     // Array(19) [ "3d", "misc", "pose", "tmp", "badgers.png", ..
-			console.log('options',options);                   // Object { scale: 1, event: pointerdown, className: "dark", ..
+			// if (true) console.log(foldersDict[filename]);               // this prints the correct list of files inside that folder
+			// if (true) console.log('thiss',thiss);                       // undefined
+			// if (true) console.log('values',values);                     // Array(19) [ "3d", "misc", "pose", "tmp", "badgers.png", ..
+			// if (true) console.log('options?.folder',options?.folder);   // misc, pose ..
 
-      if (options?.folder !== filename && !foldersDict[filename][0].startsWith(filename)) {
-        options.folder = filename                         // goal is to use this extra option as subfolder, not sure how yet; now we just check if we're in a subfolder already
+      if (!foldersDict[filename][0].startsWith(filename)) {
+        // modify the images paths so they are loaded onclick
         foldersDict[filename] = foldersDict[filename].map(file => { return `${filename}/${file}` });
       }
 
-      return ctxMenu.call({}, foldersDict[filename], options);   // this reloads LoadImage only, no css, with correct list of files, but on top of the other
-		}
-  }
+      // return ctxMenu.call({}, foldersDict[filename], options);   // this reloads a new LoadImage only, no css, with correct list of files, but on top of the other
+      if (foldersDict[filename][0] !== '..') foldersDict[filename].unshift('..');
+      let ctx = ctxMenu.call(this, foldersDict[filename], options);
+      let thisRoot = ctx.root
+      let items = Array.from(thisRoot.querySelectorAll(".litemenu-entry"));
+      let displayedItems = [...items];
+      displayedItems = [...items.map(function(el) { return addImg(el, thisRoot, ctxMenu, options) })];
+		} // click subfolder
+  } // subfolder
 
   let thumbnailSize = app.ui.settings.getSettingValue("Thumbnails.thumbnailSize");
   thumbnailSize = (thumbnailSize == undefined) ? thumbnailSizeDefault : thumbnailSize;
@@ -298,8 +318,14 @@ var addImg = async function(div, thisRoot, ctxMenu, options){
     
   // if (debug) console.debug('addImg: return div', div)
   return div
-}
+} // addImg()
 
+
+// ███████ ██   ██ ████████ 
+// ██       ██ ██     ██    
+// █████     ███      ██    
+// ██       ██ ██     ██    
+// ███████ ██   ██    ██    
 
 // we should override the core extensions/core/contextMenuFilter.js but I don't know how. Can't use the same name.
 // main problem to get subfolder images from input, is that ComfyUI\nodes.py class LoadImage does not load subfolders
@@ -367,6 +393,7 @@ const ext = {
       if (log) console.log('Extension: foldersDict', foldersDict) // {"misc": ["qr-error_corrected-example (1).png", ..], ..}
       
       // values is a list of all the files in input folder // or maybe the issue is that we should delete the original Comfy.ContextMenuFilter?
+      // if (true) console.debug('Extension: this', this)  // this is {} after upgrade to TS
       let ctx = ctxMenu.call(this, values, options);
       if (debug) console.debug('Extension: ctx', ctx)
       if (!enableThumbnails) return ctx;

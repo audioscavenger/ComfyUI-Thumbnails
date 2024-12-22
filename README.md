@@ -51,7 +51,7 @@ TODO:
   - [ ] have a good night sleep
 
 ### WIP 1.27
-- now we load subfolders, correct image paths, images load, but no thumbnails and original widget does not auto-close
+- now we load subfolders, correct image paths, images load, but we can't close the root LoadImage widget
 
 ### WIP 1.26
 - added version prompt at loading time
