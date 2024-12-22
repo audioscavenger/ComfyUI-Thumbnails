@@ -3,8 +3,8 @@ Load Image thumbnails, delete images, browse input subfolders. Subfolders now lo
 
 <p align="center">
  <img src="assets/ComfyUI-Thumbnails-featured-meme.webp" />
+ <img src="assets/ComfyUI-Thumbnails-1.27.png" />
 </p>
-![ComfyUI-Thumbnails-options](/assets/ComfyUI-Thumbnails-1.27.png)
 
 ## Options
 
