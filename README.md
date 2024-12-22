@@ -30,7 +30,7 @@ git clone https://github.com/audioscavenger/ComfyUI-Thumbnails
 ```
 
 ## Known Issues
-When you switch/select from an Empty Latent Image preset, then select the images dropdown right after, thumbnails are not loaded. To fix this, simply select the Load Image node first / click the drop down a second time. The event that carries the current_node does not propagate immediately, this seems like a bug.
+Images loaded from subfolders will not close the parent folder yet. Just click anywhere to close the dialog.
 
 ## RoadMap
 TODO:
