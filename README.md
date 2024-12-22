@@ -18,6 +18,7 @@ Load Image thumbnails, delete images, browse input subfolders. Subfolders now lo
 Thumbnails are lazy loaded, and sized by their max-height. It looks better that way, almost like a masonery. Example without filenames:
 
 ![ComfyUI-Thumbnails-options](/assets/ComfyUI-Thumbnails-search-without-filenames.webp)
+![ComfyUI-Thumbnails-options](/assets/ComfyUI-Thumbnails-1.27.png)
 
 
 ## Installation
