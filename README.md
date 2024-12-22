@@ -4,11 +4,11 @@ Load Image thumbnails, delete images, browse input subfolders. Subfolders now lo
 <p align="center">
  <img src="assets/ComfyUI-Thumbnails-featured-meme.webp" />
 </p>
+![ComfyUI-Thumbnails-options](/assets/ComfyUI-Thumbnails-1.27.png)
 
 ## Options
 
 ![ComfyUI-Thumbnails-options](/assets/ComfyUI-Thumbnails-options.webp)
-![ComfyUI-Thumbnails-options](/assets/ComfyUI-Thumbnails-1.27.png)
 
 | Attribute | Default |
 | --- | --- |
