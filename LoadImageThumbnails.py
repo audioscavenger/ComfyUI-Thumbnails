@@ -11,18 +11,18 @@ import urllib.request
 import pathlib
 from urllib.parse import unquote
 import hashlib
+import folder_paths
 
 from server import PromptServer
-import manager_core as core
-import cm_global
-import folder_paths
-import nodes
+# import manager_core as core
+# import cm_global
+# import nodes
 # import node_helpers   ## node_helpers disappeared from Comfy in July 2024 and broke my node, then was re-added. Cannot depend on it.
 
 from PIL import Image, ImageOps, ImageSequence, ImageFile, UnidentifiedImageError
 import numpy as np
 
-version = 1.31
+version = 1.32
 
 debug = False
 # debug = True
