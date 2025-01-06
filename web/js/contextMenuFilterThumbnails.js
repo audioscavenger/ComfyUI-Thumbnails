@@ -1,8 +1,11 @@
 import { app } from "../../../scripts/app.js";
 import { api } from "../../../scripts/api.js";
 import { generateId, injectCss, injectJs, wait, show_message } from "../../ComfyUI-Thumbnails/js/shared_utils.js";  // oddly, we should not add /web in the path
-var thumbnailSizeDefault = 100;
+import "../../ComfyUI-Thumbnails/js/contextmenu.js";   // oddly, we should not add /web in the path
 var imagesExt = ['apng', 'png', 'avif', 'gif', 'jpg', 'jpeg', 'j2k', 'j2p', 'jxl', 'webp', 'svg', 'bmp', 'ico', 'tiff', 'tif']
+var enableNamesDefault = false;
+var enableThumbnailsDefault = true;
+var thumbnailSizeDefault = 100;
 
 var debug = false
 var log = false
@@ -261,7 +264,7 @@ var addImg = async function(div, thisRoot, ctxMenu, options){
 		} // click subfolder
   } // subfolder
 
-  let thumbnailSize = app.ui.settings.getSettingValue("Thumbnails.thumbnailSize");
+  let thumbnailSize = app.ui.settings.getSettingValue("Thumbnails.ContextMenuOptions.thumbnailSize");
   thumbnailSize = (thumbnailSize == undefined) ? thumbnailSizeDefault : thumbnailSize;
   let maxHeight = thumbnailSize
   
@@ -270,8 +273,8 @@ var addImg = async function(div, thisRoot, ctxMenu, options){
   
   // if (debug) console.debug('addImg: app.ui.settings', app.ui.settings)
   // app.ui.settings.settingsValues = Object { "pysssss.SnapToGrid": true, "Thumbnails.enableNames": false, ... }
-  let enableNames = app.ui.settings.getSettingValue("Thumbnails.enableNames");
-  enableNames = (enableNames == undefined) ? false : enableNames;
+  let enableNames = app.ui.settings.getSettingValue("Thumbnails.ContextMenuOptions.enableNames");
+  enableNames = (enableNames == undefined) ? enableNamesDefault : enableNames;
   let title = (enableNames) ? '' : filename;
   // if (debug) console.debug('addImg: enableNames', enableNames)
   // if (debug) console.debug('addImg: fontSize', fontSize)
@@ -321,6 +324,11 @@ var addImg = async function(div, thisRoot, ctxMenu, options){
 } // addImg()
 
 
+
+
+
+
+
 // ███████ ██   ██ ████████ 
 // ██       ██ ██     ██    
 // █████     ███      ██    
@@ -332,8 +340,8 @@ var addImg = async function(div, thisRoot, ctxMenu, options){
 // Therefore, we simply superseed the python class LoadImage!
 const ext = {
   // name: "Comfy.ContextMenuFilter",
-  // name: "Thumbnails.ContextMenuFilterThumbnails",
-  name: "Comfy.ContextMenuFilterThumbnails",
+  name: "Thumbnails.ContextMenuFilterThumbnails",
+  // name: "Comfy.ContextMenuFilterThumbnails",
   init(event) {
     if (debug) console.debug('Extension: init event ----------------', event);  // Object { vueAppReady: true, ui: {…}, logging: {…}, extensions: (201) […], extensionManager: Proxy, _nodeOutputs: {}, nodePreviewImages: {}, graph: {…}, ..
     // if (debug) console.debug('event.target.id: ',event.target.id);  // no target == is this a reak event?
@@ -359,8 +367,8 @@ const ext = {
       if (debug) console.debug('Extension: thisCurrentNode.type', thisCurrentNode?.type)   // LoadImage
       if (thisCurrentNode?.type !== "LoadImage") return ctxMenu.call(this, values, options);
 
-      let enableThumbnails = app.ui.settings.getSettingValue("Thumbnails.enableThumbnails");
-      enableThumbnails = (enableThumbnails == undefined) ? true : enableThumbnails;
+      let enableThumbnails = app.ui.settings.getSettingValue("Thumbnails.ContextMenuOptions.enableThumbnails");
+      enableThumbnails = (enableThumbnails == undefined) ? enableThumbnailsDefault : enableThumbnails;
       
       // cleanup values from folder objects if any, keep only names
       if (debug) console.debug('Extension: options', options)

@@ -52,6 +52,9 @@ git clone https://github.com/audioscavenger/ComfyUI-Thumbnails
   - [x] replace thisRoot content with new subfolder content with new click listener
   - [ ] have a good night sleep
 
+### WIP 1.31
+- fixed new settings syntax for Comfy 3.10
+
 ### WIP 1.30
 - now we load subfolders, correct image paths, images load, but we can't close the root LoadImage widget
 
