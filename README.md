@@ -50,7 +50,12 @@ git clone https://github.com/audioscavenger/ComfyUI-Thumbnails
   - [x] add .. folder to thisSubRoot
   - [x] store thisRoot in local storage - just files dictionary
   - [x] replace thisRoot content with new subfolder content with new click listener
-  - [ ] have a good night sleep
+  - [ ] ahow number of files over folder icons
+  - [ ] recurse subfolders
+
+### WIP 1.33
+- always show folder names
+- always rebuild foldersDict or Refresh Node Definitions would not reload new files in subfolders
 
 ### WIP 1.32
 - removed import of core modules we don't use in the py

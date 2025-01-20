@@ -1,6 +1,8 @@
-.litegraph.litecontextmenu {
-  /* left: initial !important; */
-  /* top: 100px !important; */
+/* make images masonery full screen width */
+/* .litegraph.litecontextmenu { */
+.fullWidthMenu {
+  left: initial !important;
+  top: 100px !important;
 }
 
 /* https://css-tricks.com/piecing-together-approaches-for-a-css-masonry-layout/ */
@@ -56,12 +58,12 @@
   /* counter-reset: masonry; */
 /* } */
 .masonry-item:after {
+  content: attr(data-size);
+  
   /* counter-increment: masonry; */
   /* content: counter(masonry); */
   /* https://developer.mozilla.org/en-US/docs/Web/CSS/attr */
   /* content: attr(data-value); */
-  background-color: rgba(0, 0, 0, .2);
-  content: attr(data-size);
   position: absolute;
   top: 0;
   font-size: small;
@@ -77,8 +79,14 @@
 .masonry-item:hover:after {
   color: white;
   height: 1em;
-  font-size: small;
   background-color: rgba(0, 0, 0, .75);
+}
+
+/* always show folder names: method 2 (top text, does not alter height of first row) */
+.masonry-item.folder:after {
+  color: white;
+  height: 1em;
+  background-color: rgba(0, 0, 0, .50);
 }
 
 .btn-delete {

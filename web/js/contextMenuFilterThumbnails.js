@@ -6,6 +6,7 @@ var imagesExt = ['apng', 'png', 'avif', 'gif', 'jpg', 'jpeg', 'j2k', 'j2p', 'jxl
 var enableNamesDefault = false;
 var enableThumbnailsDefault = true;
 var thumbnailSizeDefault = 100;
+var fullWidthMenuDefault = false;
 
 var debug = false
 var log = false
@@ -177,9 +178,9 @@ var addImg = async function(div, thisRoot, ctxMenu, options){
   if (debug) console.log(`addImg: filename=${filename} fileext=${fileext} isFolder=${isFolder} foldersDict[${filename}]=`, foldersDict[filename]);
   
   // refuse to show anything else then images and folders: as a matter of fact, LoadImage will not filter images and return every file
-  // Therefore, we also filter out extensions not in imagesExt
+  // Therefore, we also filter out extensions not in imagesExt. Maybe latest versions of Comfy clean up file list, I did not verify.
   if (!isFolder && !imagesExt.includes(fileext)) {
-    console.log(`addImg: deleteNode ${filename}`);
+    if (log) console.log(`addImg: deleteNode ${filename}`);
     deleteNode(filename, thisRoot)
     return;
   }
@@ -212,6 +213,7 @@ var addImg = async function(div, thisRoot, ctxMenu, options){
 
     // preload image and detect size
     let img=new Image();
+    // div.dataset.size == data-size = the top text that shows on hover
     img.onload = function() {
       div.dataset.size = `${this.width}x${this.height}`;
     }
@@ -226,6 +228,7 @@ var addImg = async function(div, thisRoot, ctxMenu, options){
 
 
     div.classList.add("folder");
+    // div.dataset.size == data-size = the top text that shows on hover
     div.dataset.size = filename;
     div.dataset.files = foldersDict[filename];
     // let files
@@ -275,15 +278,18 @@ var addImg = async function(div, thisRoot, ctxMenu, options){
   // app.ui.settings.settingsValues = Object { "pysssss.SnapToGrid": true, "Thumbnails.enableNames": false, ... }
   let enableNames = app.ui.settings.getSettingValue("Thumbnails.ContextMenuOptions.enableNames");
   enableNames = (enableNames == undefined) ? enableNamesDefault : enableNames;
-  let title = (enableNames) ? '' : filename;
+
+  let title = filename;
+  if (isFolder && filename !== '..') title = `${filename}: ${foldersDict[filename].length} files`;
   // if (debug) console.debug('addImg: enableNames', enableNames)
   // if (debug) console.debug('addImg: fontSize', fontSize)
   // if (debug) console.debug('addImg: filename', filename, 'filenameUri', filenameUri)
   // if (debug) console.debug('addImg: div.value', div.value)   // div.value is the filenameDecoded!
   // if (debug) console.debug('addImg: thisRoot', thisRoot)
 
-  // show or hide thumbnail name
-  if (!enableNames) { div.classList.add('hideText'); } else { div.classList.add('showText'); }
+  // show or hide thumbnail name, but always show folder names: method 1 (bottom text, alters height of first row)
+  // if (enableNames || isFolder) { div.classList.add('showText'); } else { div.classList.add('hideText'); }
+  if (enableNames) { div.classList.add('showText'); } else { div.classList.add('hideText'); }
   // 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.
   // insert thumbnail inside div
   div.insertAdjacentHTML( 'afterBegin', `<img decoding="async" loading="lazy" width="400" height="400" style="max-height:${maxHeight}px" class="masonry-content" src="${src}" alt="${filenameUri}" title="${title}">` );
@@ -383,7 +389,9 @@ const ext = {
         if (typeof item == 'object' && item !== null) {
 
           // build foldersDict that we will use later to rebuild ctx with new values; do not re-add same folder twice.
-          if (!foldersDict[item.name]) foldersDict[item.name] = item?.files
+          // if (!foldersDict[item.name]) foldersDict[item.name] = item?.files
+          // Actually... yes we do rebuild foldersDict because otherwise, Refresh Node Definitions would not reload new files in subfolders!
+          foldersDict[item.name] = item?.files
           
           // just replace folder object with just its name // 1.24: doing that, second click will show no folders
           values[i] = item['name']
@@ -426,11 +434,9 @@ const ext = {
       // at least we can override it for less than 10 images
       if (options?.className === "dark" && values?.length > 1) {
         if (debug) console.debug('Extension: options?.className',options?.className)
+
         // we are not replacing the menu filter, otherwise when images are filtered, the original filter listener would take over
         let filter = document.getElementsByClassName("comfy-context-menu-filter")[0];
-
-        // originalFilter.parentNode.removeChild(originalFilter);
-        // let filter = document.createElement("input");
         // filter.classList.add("comfy-context-menu-filter");
         filter.placeholder = "Filter images";
         // this.root.prepend(filter);
@@ -439,7 +445,13 @@ const ext = {
         let thisRoot = ctx.root
         if (debug) console.debug('Extension: thisRoot before', thisRoot)  // undefined after October 2024 upgrade to TS
         if (debug) console.debug('Extension: getListFromStorage', getListFromStorage('thumbnails.DeletedImages'))   // empty until you delete smth
-        // we need to find what controls the content of values in LiteGraph.ContextMenu = function (values, options) and the buildup of ".litemenu-entry"
+
+        let fullWidthMenu = app.ui.settings.getSettingValue("Thumbnails.ContextMenuOptions.fullWidthMenu");
+        fullWidthMenu = (fullWidthMenu == undefined) ? fullWidthMenuDefault : fullWidthMenu;
+        // BUG: currently this applies only to the root input folder and that's fine, I like it like that.
+        if (fullWidthMenu) { thisRoot.classList.add('fullWidthMenu'); } else { thisRoot.classList.remove('fullWidthMenu'); }
+
+        // Long term quest: I need to find what controls the content of values in LiteGraph.ContextMenu = function (values, options) and the buildup of ".litemenu-entry"
         for (var deletedImage of getListFromStorage('thumbnails.DeletedImages')) {
           let childToDelete = thisRoot.querySelectorAll(`[data-value="${decodeURIComponent(deletedImage)}"]`)[0]
           if (debug) console.debug('Extension: deletedImage', deletedImage, 'childToDelete', childToDelete)
@@ -468,15 +480,15 @@ const ext = {
           // displayedItems = [...items.map(function(el) { return addImg(el, thisRoot, folders) })]; // we pass thisRoot to addImg so the btnDelete event can delete the item
           // displayedItems = [...items.map(function(el) { return addImg(el, thisRoot, foldersDict) })]; // we pass thisRoot to addImg so the btnDelete event can delete the item
           displayedItems = [...items.map(function(el) { return addImg(el, thisRoot, ctxMenu, options) })]; // foldersDict is now getListFromStorage('thumbnails.Folders')
-/*
-filtering and removing elements here does not help. We need to alter values directly, before ctx is instanced
+        /*
+        filtering and removing elements here does not help. We need to alter values directly, before ctx is instanced
 
         } else {
           // remove folder objects if any
           // displayedItems = items.filter(el => el.innerText !== '[object Object]' ); // removing entried from the filter is insufficient, we need to delete the div too
           items = items.filter(el => { if (el.innerText !== '[object Object]') {return el} else {el.remove()} });
           displayedItems = [...items];
-*/
+        */
         }
         if (log) console.log('Extension: displayedItems', displayedItems)
         
@@ -621,7 +633,7 @@ filtering and removing elements here does not help. We need to alter values dire
 
       } // dark
 
-      // console.log('return ctx')
+      if (debug) console.debug('return ctx',ctx)
       return ctx;
     };
     

@@ -20,6 +20,16 @@ const options = {
       type: "integer"
     });
     app.ui.settings.addSetting({
+      id: "Thumbnails.ContextMenuOptions.fullWidthMenu",
+      name: "[📷] Load Image: Make images picker full screen width",
+      defaultValue: false,
+      type: "boolean",
+      // options: (value) => [
+      //   { value: true, text: "On", selected: value === true },
+      //   { value: false, text: "Off", selected: value === false },
+      // ],
+    });
+    app.ui.settings.addSetting({
       id: "Thumbnails.ContextMenuOptions.enableNames",
       name: "[📷] Load Image: Show File names",
       defaultValue: false,

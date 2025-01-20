@@ -22,7 +22,7 @@ from server import PromptServer
 from PIL import Image, ImageOps, ImageSequence, ImageFile, UnidentifiedImageError
 import numpy as np
 
-version = 1.32
+version = 1.33
 
 debug = False
 # debug = True
@@ -43,7 +43,6 @@ def findFile(name, path):
 
 
 ## node_helpers was briefly removed from Comfy in July 2024, then re-added. Mistake or not, it broke my node.
-## No political pun intended, I swear.
 def myPillow(fn, arg):
   prev_value = None
   try:
