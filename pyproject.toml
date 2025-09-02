@@ -1,14 +1,21 @@
+#  Used by Comfy Registry https://comfyregistry.org
+# updated in accordance to https://docs.comfy.org/registry/specifications
+
 [project]
 name = "comfyui-thumbnails"
-description = "Load Image thumbnails, delete images, browse input subfolders."
-version = "1.33"
+version = "1.34"
+description = "Load Image thumbnails, delete images, browse input subfolders!"
 license = { file = "LICENSE" }
+requires-python = ">=3.9"
+classifiers = [
+  "Operating System :: OS Independent"  # Works on all operating systems
+]
 
 [project.urls]
 Repository = "https://github.com/audioscavenger/ComfyUI-Thumbnails"
-#  Used by Comfy Registry https://comfyregistry.org
+Documentation = "https://github.com/audioscavenger/ComfyUI-Thumbnails"
+"Bug Tracker" = "https://github.com/audioscavenger/ComfyUI-Thumbnails/issues"
 
 [tool.comfy]
 PublisherId = "audioscavenger"
-DisplayName = "ComfyUI-Thumbnails"
-Icon = ""
+DisplayName = "Thumbnails for LoadImage"

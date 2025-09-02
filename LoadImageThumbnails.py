@@ -22,7 +22,7 @@ from server import PromptServer
 from PIL import Image, ImageOps, ImageSequence, ImageFile, UnidentifiedImageError
 import numpy as np
 
-version = 1.33
+version = 1.34
 
 debug = False
 # debug = True

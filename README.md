@@ -35,7 +35,10 @@ git clone https://github.com/audioscavenger/ComfyUI-Thumbnails
 
 ## RoadMap
 
-### Goal: 1.30
+### TODO list
+- [ ] test with pods
+- [ ] test with Linux
+- [ ] test with MacOS
 - [ ] fix parent root folder not closing or live with it
 - [x] browse subfolders of input - yay we did it!
   - [x] fix subfolder image calls: view&subfolder=folder stopped working
@@ -50,8 +53,11 @@ git clone https://github.com/audioscavenger/ComfyUI-Thumbnails
   - [x] add .. folder to thisSubRoot
   - [x] store thisRoot in local storage - just files dictionary
   - [x] replace thisRoot content with new subfolder content with new click listener
-  - [ ] ahow number of files over folder icons
-  - [ ] recurse subfolders
+  - [ ] show number of files over folder icons
+  - [x] recurse subfolders
+
+### WIP 1.34
+- updated pyproject.toml
 
 ### WIP 1.33
 - always show folder names
